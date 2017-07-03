@@ -6,27 +6,27 @@
 	   * Apache Hadoop Core项目的一部分
      
 ### data Model
-*	类似文件系统 目录和文件保存数据 Znode 
-  *	临时节点
-	* 序列节点
-   * 原子操作 读写 
-   * 访问控制 Perm ALL READ WRITE CREATE DELETE ADMIN 
+* 类似文件系统 目录和文件保存数据 Znode 
+  * 临时节点
+  * 序列节点
+ 	* 原子操作 读写 
+	* 访问控制 Perm ALL READ WRITE CREATE DELETE ADMIN 
 
 * 提供非常简单的编程接口
 	支持 监听 Client Zndoe设置监听
 
 * 统一命名访问 Name Service
-	create wir PERSISTENT_SEQUENTIAL
-    配置管理 confguration management
-   集群管理  Group Membership
-	Masters watch + EPHEMERAL_SEQUENTAL
- 	Slaves getChidren to find masters 
+	* create wir PERSISTENT_SEQUENTIAL
+	* 配置管理 confguration management
+	* 集群管理  Group Membership
+	* Masters watch + EPHEMERAL_SEQUENTAL
+ 		* Slaves getChidren to find masters 
 
 * 共享锁 Locks	
-	create with EPHEMERAL
-     列队管理
-	P:List of create with EPHEMERAL_SEQUEMTIAL
-	C：getChildren wath create tag zonde
+	* create with EPHEMERAL
+	*列队管理
+		* P:List of create with EPHEMERAL_SEQUEMTIAL
+		* C：getChildren wath create tag zonde
 
 * HDFS 高可用性
 	NameNode 存在单节点故事 SPOF 对于一个NameNode 几区
