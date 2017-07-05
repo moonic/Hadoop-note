@@ -1,6 +1,6 @@
 ## Hbase NOSQL（Big Table 论文）
 
-> HBase在Hadoop之上提供了类似于Bigtable的能力。
+> HBase 分布式的、面向列的开源数据库,在Hadoop之上提供了类似于Bigtable的能力。
 适合于非结构化数据存储的数据库。另一个不同的是HBase基于列的而不是基于行的模式。
 
 * 目的
@@ -16,8 +16,8 @@
 
 
 * 分布式面向列簇的数据存储系统位于HDFS的上层
-		  * apache开源项目 Hadoop分布式的生态成员
-		  * 数据逻辑上为组织表 行和列
+	* apache开源项目 Hadoop分布式的生态成员
+	* 数据逻辑上为组织表 行和列
 
 * Hbase vs HDFS （重点）
 	* 都是分布式存储系统 可扩展到上千个界定规模
@@ -25,7 +25,7 @@
 
 
 * HDFS 批处理
-		不能个别查找 不能记录更新操作
+	* 不能个别查找 不能记录更新操作
 
 * Hbase
 		解决上面的为题
@@ -35,12 +35,12 @@
 		创建新版本数据的方式完成
 
 *  Hbase VS RDBMS
-	* 列簇      行
-	* 单行      ACID事务
+	* 列簇     			 行
+	* 单行     			 ACID事务
 	* get/put/scan SQL
-	* rowkey    二级索引任意列	 
-	* TB 		   PB
-	* 非常好	 依赖中间层牺牲功能
+	* rowkey   		 二级索引任意列	 
+	* TB 		  		 PB
+	* 非常好	 			 依赖中间层牺牲功能
 
 * 特点
 	* 表只能有一个主键 row key
@@ -50,7 +50,6 @@
 * 集群
 	* Hbase Master   Zookeeper Server (无法保存到本地 获取元数据信息)
 
-	
 	NodeManager 
 	Hbase RegionServer 
 	dataNode 
@@ -62,8 +61,11 @@
 	* 每个列簇包一个多个列
 
 * cell qualifier 单元修饰符
-	Timestamp 时间睉
-	Region 区域 
+
+* Timestamp 时间戳
+	* 每个Cell可能又多个版本，它们之间用时间戳区分
+	
+* Region 区域 
 
 * row key
 	* 表中的行是字节数组 最大长度为64kb
@@ -71,18 +73,30 @@
 	* 表中的行键值进行排序 按照Row key
 	* byte order排序
 
-Column Family
+* Column Family 列族
+	* 列族物理上包含一组列和它们的值
+	* 每一个列族拥有一系列的存储属性
+		* 例如值是否缓存在内存中，数据是否要压缩或者他的行key是否要加密等等。表格中的每一行拥有相同的列族，尽管一个给定的行可能没有存储任何数据在一个给定的列族中。
+		
+* Column Qualifier  
+	* Column Family之上的列定义是为一个给定的数据提供索引。
+	* 对于一个指定的Column Family：content，它的可能的列定义是content:html,content:pdf等等。尽管Column Family是在表建立时就已创建，列定义是可变 每一行的列定义可能都不同 
 
-* 逻辑视图 
+
+* Conceptual view(概念视图)
+	* Understanding HBase and BigTable
+	* Amandeep Khurana的PDF格式的Introduction to Basic Schema Design
+
 * 物理视图
 	
-  * HFIle 格式结构
-		* 基本的元数据是不能被压缩的
-		* hash列簇的结构
+* HFIle 格式结构
+	* 基本的元数据是不能被压缩的
+	* hash列簇的结构
 
 * Hbase 表的特点
-	   * 大 面向列 稀疏 
-	   * 每个cell中的数据可以有多个版本 
+	* 大 面向列 稀疏 (考虑可压缩)
+	* 每个cell中的数据可以有多个版本 
+	
 * Hbase是字符串没有类型
 	* 强一致性
 	* 水平伸缩
@@ -92,6 +106,7 @@ Column Family
 	* 支持三种查询方法
 	* 基于rowkey索引
 	* 高性能的随机写
+	
 * Hadoop 无缝集成
 	* 可以直接谢雨Hbase
 	* 存放在Hbase数据直接通过Hadoop来分析
@@ -120,6 +135,6 @@ Column Family
 	* 表中必要定义太多列
 	* 适当预分区
 	* Rowkey设计唯一 必要太长
-	* 更具业务设计 I你memory TTL MaxVersion等值
+	* 更具业务设计 Inmemory TTL MaxVersion等值
 	* 适当Major Compaction 不要在高峰期执行
 
