@@ -43,5 +43,12 @@ Java MapReuce
 * Mapper 接口是一个泛型类型 4个形式参数指定amp的输入输出类型
 
 
+### 分布化
+	* 作为大数据流进行输入
 
+* 数据流
+	* job是客户执行的单位 包括输入数据
+	MapReduce 程序配置信息 分成Task来工作
+	* map reduce任务
+	
 	
