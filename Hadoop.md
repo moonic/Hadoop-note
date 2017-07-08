@@ -57,7 +57,7 @@
 	* 洗牌分区第二阶段合适的计算机上
 
 
-···java
+```java
 
 public class WordCount extends configured implements Tool{
 
@@ -97,7 +97,26 @@ public class WordCount extends configured implements Tool{
 }
 
 
-···
+```
+
+* 发展史
+	* Apache Lucene 子项目 全文本索引查询库 给顶一个文本集合
+		* 根加方便的搜索 建立一个完整的web搜索银杏
+	* Google 论文 GFS文件系统  MapReduce框架
+		* 将Nutch 移植上去 提升了可扩展性 处理几亿个网页 运行在今节点集群上
+	* 专业项目实行网络扩展需要的技术出来了hadoop
+
+
+* Hadoop 构建模块
+	* 全配置的集群运行Hadoop 不同服务器运行守护进程daemons 守护
+		* NameNode DataNode
+			* 分布式计算你与分布式存储才去 主从 master slave结构
+			* Hadoop文件系统HDFS NameNode 位于HDFS主端
+			* 执行地城IO任务 NameNode追踪文件如何被分成文件块
+			* 
+		* Secondary NameNode
+		* JobTracker 
+		* TaskTracker
 
 
 
