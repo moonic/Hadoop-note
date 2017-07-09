@@ -118,5 +118,92 @@ public class WordCount extends configured implements Tool{
 		* JobTracker 
 		* TaskTracker
 
+* 层级队列组织方式
+	* 在一个Hadoop集群中，管理员将所有计算资源划分给了若干个队列，每个队列对应了一个“组织”，其中有一个组织“Org1”，它分到了60%的资源，它内部包含3中类型的作业：
+		1. 产品线作业
+		2. 实验性作业—分属于三个不用的项目：Proj1，Proj2和Proj3
+		3. 其他类型作业
 
+* Org1管理员想更有效地控制这60%资源，比如将大部分资源分配给产品线作业的同时，能够让实验性作业和其他类型作业有最少资源保证。考虑到产品线作业提交频率很低，当有产品线作业提交时，必须第一时间得到资源，剩下的资源才给其他类型的作业，然而，一旦产品线作业运行结束，实验性作业和其他类型作业必须马上获取未使用的资源，一个可能的配置方式如下：
+grid {
+Org1 min=60% {
+priority min=90% {
+production min=82%
+proj1 min=6% max=10%
+proj2 min=6%
+proj3 min=6%
+}
+miscellaneous min=10%
+}
+Org2 min=40%
+}
+这就引出来层级队列组织方式。
+（1） 子队列
+1）  队列可以嵌套，每个队列均可以包含子队列。
+2）  用户只能将作业提交到最底层的队列，即叶子队列。
+（2）最少容量
+1）每个子队列均有一个“最少容量比”属性，表示可以使用父队列的容量的百分比
+2）调度器总是优先选择当前资源使用率最低的队列，并为之分配资源。比如同级的两个队列Q1和Q2，他们的最少容量均为30，而Q1已使用10，Q2已使用12，则调度器会优先将资源分配给Q1。
+3）最少容量不是“总会保证的最低容量”，也就是说，如果一个队列的最少容量为20，而该队列中所有队列仅使用了5，那么剩下的15可能会分配给其他需要的队列。
+4）最少容量的值为不小于0的数，但也不能大于“最大容量”。
+（3） 最大容量
+1）  为了防止一个队列超量使用资源，可以为队列设置一个最大容量，这是一个资源使用上限，任何时刻使用的资源总量不能超过该值。
+2） 默认情况下队列的最大容量是无限大，这意味着，当一个队列只分配了20%的资源，所有其他队列没有作业时，该队列可能使用100%的资源，当其他队列有作业提交时，再逐步归还。
+如何将一个队列中的资源分配给它的各个子队列？
+当一个TaskTracker发送心跳请求一个新任务时，调度器会按照以下策略为之选择任务：
+1）  按照 比值{used capacity}/{minimum-capaity},对所有子队列排序；
+2）  选择一个比值{used capacity}/{minimum-capaity}最小的队列：
+如果是一个叶子队列，且有处于pending状态的任务，则选择一个任务（不能超过maximum capacity）；
+否则，递归地从这个队列的子队列中选择任务。
+3）  如果没有找到任务，则查看下一个队列。
+层级队列组织方式在 0.21.x和0.22.x中引入，但仅有Capacity Scheduler支持该组织方式（https://issues.apache.org/jira/browse/MAPREDUCE-824 ），当然，最新的YARN（Hadoop 0.23.x和2.0.x-alpha）也为Fair Scheduler增加了层级队列的支持，具体参考：https://issues.apache.org/jira/browse/YARN-187。
+如何配置？
+以0.21.x为例，管理员可在配置文件mapred-queues.xml中配置层级队列，配置方式如下：
+<queues>
+<queue>
+<name>Org1</name>
+<queue>
+<name>production</name>
+<properties>
+<property key=”capacity” value=”20″/>
+<property key=” maximum-capacity” value=”20″/>
+<property key=”supports-priority” value=”true”/>
+<property key=”minimum-user-limit-percent” value=”30″/>
+<property key=”maximum-initialized-jobs-per-user” value=”10″/>
+<property key=”user-limit” value=”30″/>
+</properties>
+</queue>
+<queue>
+<name>miscellaneous</name>
+<properties>
+<property key=”capacity” value=”10″/>
+<property key=” maximum-capacity” value=”20″/>
+<property key=”user-limit” value=”20″/>
+</properties>
+</queue>
+。。。。。。。
+</queues>
+管理员可在capacity-scheduler.xml中设置一些参数的默认值和Capacity独有的配置：
+<configuration>
+<property>
+<name>mapred.capacity-scheduler.default-supports-priority</name>
+<value>false</value>
+</property>
+<property>
+<name>mapred.capacity-scheduler.default-minimum-user-limit-percent</name>
+<value>100</value>
+</property>
+<property>
+<name>mapred.capacity-scheduler.default-maximum-initialized-jobs-per-user</name>
+<value>2</value>
+</property>
+<property>
+<name>mapred.capacity-scheduler.init-poll-interval</name>
+<value>5000</value>
+</property>
+<property>
+<name>mapred.capacity-scheduler.init-worker-threads</name>
+<value>5</value>
+</property>
+</configuration>
 
