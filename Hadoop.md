@@ -155,16 +155,19 @@ Org2 min=40%
 	* 最大容量
 		1. 为了防止一个队列超量使用资源，可以为队列设置一个最大容量，这是一个资源使用上限，任何时刻使用的资源总量不能超过该值。
 		2. 默认情况下队列的最大容量是无限大，这意味着，当一个队列只分配了20%的资源，所有其他队列没有作业时，该队列可能使用100%的资源，当其他队列有作业提交时，再逐步归还。
-如何将一个队列中的资源分配给它的各个子队列？
-当一个TaskTracker发送心跳请求一个新任务时，调度器会按照以下策略为之选择任务：
-1）  按照 比值{used capacity}/{minimum-capaity},对所有子队列排序；
-2）  选择一个比值{used capacity}/{minimum-capaity}最小的队列：
-如果是一个叶子队列，且有处于pending状态的任务，则选择一个任务（不能超过maximum capacity）；
-否则，递归地从这个队列的子队列中选择任务。
-3）  如果没有找到任务，则查看下一个队列。
-层级队列组织方式在 0.21.x和0.22.x中引入，但仅有Capacity Scheduler支持该组织方式（https://issues.apache.org/jira/browse/MAPREDUCE-824 ），当然，最新的YARN（Hadoop 0.23.x和2.0.x-alpha）也为Fair Scheduler增加了层级队列的支持，具体参考：https://issues.apache.org/jira/browse/YARN-187。
+
+
+* 如何将一个队列中的资源分配给它的各个子队列？
+	* 当一个TaskTracker发送心跳请求一个新任务时，调度器会按照以下策略为之选择任务：
+		1. 按照 比值{used capacity}/{minimum-capaity},对所有子队列排序；
+		2. 选择一个比值{used capacity}/{minimum-capaity}最小的队列：
+		如果是一个叶子队列，且有处于pending状态的任务，则选择一个任务（不能超过maximum capacity）；
+		否则，递归地从这个队列的子队列中选择任务。
+		3. 如果没有找到任务，则查看下一个队列。
+			* 层级队列组织方式在 0.21.x和0.22.x中引入，但仅有Capacity Scheduler支持该组织方式（https://issues.apache.org/jira/browse/MAPREDUCE-824 ），当然，最新的YARN（Hadoop 0.23.x和2.0.x-alpha）也为Fair Scheduler增加了层级队列的支持，具体参考：https://issues.apache.org/jira/browse/YARN-187。
 如何配置？
 以0.21.x为例，管理员可在配置文件mapred-queues.xml中配置层级队列，配置方式如下：
+```xml
 <queues>
 <queue>
 <name>Org1</name>
@@ -213,3 +216,4 @@ Org2 min=40%
 </property>
 </configuration>
 
+```
