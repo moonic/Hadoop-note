@@ -164,9 +164,13 @@ Org2 min=40%
 		如果是一个叶子队列，且有处于pending状态的任务，则选择一个任务（不能超过maximum capacity）；
 		否则，递归地从这个队列的子队列中选择任务。
 		3. 如果没有找到任务，则查看下一个队列。
-			* 层级队列组织方式在 0.21.x和0.22.x中引入，但仅有Capacity Scheduler支持该组织方式（https://issues.apache.org/jira/browse/MAPREDUCE-824 ），当然，最新的YARN（Hadoop 0.23.x和2.0.x-alpha）也为Fair Scheduler增加了层级队列的支持，具体参考：https://issues.apache.org/jira/browse/YARN-187。
-如何配置？
-以0.21.x为例，管理员可在配置文件mapred-queues.xml中配置层级队列，配置方式如下：
+			* 层级队列组织方式在 0.21.x和0.22.x中引入，但仅有Capacity Scheduler支持该组织方式	
+				（https://issues.apache.org/jira/browse/MAPREDUCE-824 
+			* 最新的YARN（Hadoop 0.23.x和2.0.x-alpha）也为Fair Scheduler增加了层级队列的支持，具体参考：
+				https://issues.apache.org/jira/browse/YARN-187。
+
+* 如何配置？
+	* 以0.21.x为例，管理员可在配置文件mapred-queues.xml中配置层级队列，配置方式如下：
 ```xml
 <queues>
 <queue>
