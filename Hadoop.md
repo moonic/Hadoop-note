@@ -109,15 +109,34 @@ public class WordCount extends configured implements Tool{
 
 * Hadoop 构建模块
 	* 全配置的集群运行Hadoop 不同服务器运行守护进程daemons 守护
-		* NameNode DataNode
+		* NameNode 
 			* 分布式计算你与分布式存储才去 主从 master slave结构
 			* Hadoop文件系统HDFS NameNode 位于HDFS主端
-			* 执行地城IO任务 NameNode追踪文件如何被分成文件块
-			* 
+			* 执行底层IO任务 NameNode追踪文件如何被分成文件块
+			* 运行时消耗大量的IO资源 不会存储用户数据或者执行MapReduce
+			NameNode 不会同时是TaskTracker
+				* Hadoop 集群的单点失败热河其他的守护进程节点还是会平稳运行
+		* DataNode
+			* 集群上的从几点族村一个DataNode守护进程
+			将HDFS数据库读取或者本地文件实际系统
+			* NameNode 告诉客户端驻留在那个DataNode
+			* 直接DataNode守护进程通信 处理对应的数据块对应的本地文件
+				* 多个数据块用重复的存储在不同的副本上
+				* DataNode向NameNode包括 个更新NameNode
 		* Secondary NameNode
+			* 检测HDFS 辅助时候进程 独占一台服务器
+			* 该服务器不会运行其他的DataNode or TaskTracker 守护进程
+			* SNN 快照有助于减少停机时候并降低数据丢失的风险
 		* JobTracker 
+			* 监视MapReduce作业的执行过程
+			* JT守护进程 是应用程序和hadoop 之间的纽带
+			* 不同任务分配的节点控制任务的运行
+			* 一个几区只有一个守护进程 运行在服务器集群的主节点上
 		* TaskTracker
-
+			* 执 JobTracker 分配的单项任务 各个任务从节点的执行情况
+			* 持续不断 JobTracker 通信 如果为收到默认为崩溃
+			
+	
 * 层级队列组织方式
 	* 在一个Hadoop集群中，管理员将所有计算资源划分给了若干个队列，每个队列对应了一个“组织”，其中有一个组织“Org1”，它分到了60%的资源，它内部包含3中类型的作业：
 		1. 产品线作业
