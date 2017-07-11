@@ -135,10 +135,70 @@ public class WordCount extends configured implements Tool{
 		* TaskTracker
 			* 执 JobTracker 分配的单项任务 各个任务从节点的执行情况
 			* 持续不断 JobTracker 通信 如果为收到默认为崩溃
-			
+
+## Hadoop 组件
+
+* HDFS 文件系统为MapReduce 框架的分布式处理设计的
+可以存放一个大的数据集合 存储为单个文件 大多数系统无力实现这一点
+并不是天生的Unix系统
+不只是 文件命令 ls cp 
+
+* 基本文件命令
+	* hadoop fs -cmd <args>
+		* hadoop fs -linux命令
+
+* Hadoop 文件系统命令与HDFS文件系统教会 可以和本地文件系统交互
+	* URI 精确的映射指定文件或者目录位置 scheme协议
+	* 来指定HDFS 文件或者本地文件系统 
+		* 对于本地文件使用标准的Uninx命令 其他命令就会默认定向跳转
+
+* 添加文件目录
+	* hadoop文件起点是FileSystem 类 一个与文件系统交互抽象的类
+	* 可以调用 factory 方法 来得到需要的Filesystem 实列
+	* configuration 基于保留键配置的特殊类
+
+
+* PutMerge applcation 
+	* 用户定义参数设置本地目录HDFS目标文件
+	* 提取本地文件信息
+	* 创建一个输出流写入HDFS 文件
+	* 遍历蹦迪绿文件 打开输入流读取文件
+
+```java
+	public static void main(String[] args) {
+		Configuration conf = new Configuration();
+		FileSystem hdfs = FileSystem.get(conf);
+		FileSystem local = FileSystem.getLocal(conf);
+
+		Path inputDir = new Path(args[0]);
+		Path hdfsFile = new Path(args[1]);
+
+		try{
+			FileStatus[] inputFiles = local.listStatus(inputDir);
+			FSDataOutputStream out = hdfs.create(hdfsFile);
+
+			for (int i=0; i<inputFiles.length ;i++ ) {
+				System.out.println(inputFiles{i}.getpath().getName*());
+				FSDataInputStream in = local.opne(inputFilesi[i].getpath());
+			byte buffer[] = new byte[256];
+			int bytesRead=0;
+			while([bytesRead=in.read(buffer)]>0);
+				outwrite((byter,0,bytesRead);
+			}
+			in.close();
+		}
+			out.close();
+		}catch(IOException e ){
+			e.printtackTrace();
+		}
+
+	}
+
+```			
 	
 * 层级队列组织方式
-	* 在一个Hadoop集群中，管理员将所有计算资源划分给了若干个队列，每个队列对应了一个“组织”，其中有一个组织“Org1”，它分到了60%的资源，它内部包含3中类型的作业：
+	* 在一个Hadoop集群中，管理员将所有计算资源划分给了若干个队列，每个队列对应了一个“组织”
+	* 其中有一个组织“Org1”，它分到了60%的资源，它内部包含3中类型的作业：
 		1. 产品线作业
 		2. 实验性作业—分属于三个不用的项目：Proj1，Proj2和Proj3
 		3. 其他类型作业
