@@ -232,6 +232,59 @@ public class WordCount extends configured implements Tool{
 
 --- 
 
+## Hadoop 数据类型
+> MapReduce 不允许是任意类 可以将键与值称为整数字符单并不是
+java 提供的标准类 只是为了让键值可以移动 MapReduce 提供了一序列化的过程
+
+* key value 常用的类型列表
+	* BooleanWritable   布尔类封装
+	* ByteWritable 
+	* DoubleWritable 
+	* FloatWritable 
+	* IntWritable 
+	* LongWritable
+	* Text
+
+* 支持自定义数据类型只要实现Writable WritbleComparable<T>
+
+```java
+	
+	public class Edge implements WritbleComparable<Edge>{
+
+		private String departureNode;
+		private String arrivalNode;
+
+		public String getDepartureode(){
+			reporter departureNode;
+		}
+	}
+
+
+
+```
+
+
+* Mapper 
+> 普通类作为Mapper 继承MapReduceBase 并实现 Mapper 接口
+
+* 构造解析方法
+	* void configure jobconf job 
+	* void close()
+
+	void map(k1 key,
+		V1 value,
+		OutputCollector<k2,v2>output
+		Reporter reporter
+	)
+	
+	
+	
+	---
+
+
+
+
+
 ## Hadoop 机制
 
 
