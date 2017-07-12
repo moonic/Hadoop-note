@@ -1,4 +1,17 @@
-# Hadoop-note
+# Big Data 
+ 
+* 我们的生活被数据包围 用户的数据指数级增长使得机器存储更多的数据
+	 * 数据的增加而让商业软件 SEO西药获得 用户的需求
+	 * Google MapReduce 来适用庞大的数据 
+	 * Doug Cutting开源版本的MapReduce
+	 * Hadoop成为很多平台的核心部分
+
+* Hadoop大规模分布式数据处理成为关键性技能
+	* 分布式系统和数据处理系统方面的定位 MapReduce定位模型
+
+---
+
+## Hadoop
 
  * google 的低成本之道
     * 互联网公司在创立的时候 盈利状态不好 并不会去买强大的计算机硬件
