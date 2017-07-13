@@ -17,3 +17,22 @@
 	)
 
 * 给定键值对并生成一个 列表 OutputCollector接到并输出
+	* IdentityMapper K,V  直接输出
+	* InverseMapper  K,V  反转
+	* RegexMapper<K>     实现Mapper
+	* TokenCountMapper   生成一个token，1 对
+
+
+* Reducer
+	* MapReduce基类上扩展 运行配置实现接口单一方法
+	* Reduce任务 接到输出时候 排序低啊用reduce()函数
+	* 迭代生成列表
+
+* Partitoner 重定向Mapper输出
+	* 多个reducer 采取方法确认Mapper输出给谁
+	* HashPartitioner 类前置执行策略
+
+* 定制 Partitoner
+	* 实现configure()和getPartition函数
+	* 返回一个 reduce 任务之间的整数
+	
