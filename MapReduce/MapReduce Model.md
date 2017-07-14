@@ -55,7 +55,7 @@
 
 * 预定义类 重整 mapper reducer 类
 
-···java
+```java
 	public class WordCountor2{
 		public static void main(String[] args) {
 			JobClient client = new JobClient();
