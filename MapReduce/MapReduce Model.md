@@ -42,11 +42,8 @@
 			return key.getDepartureode().hashCode()%numPartitoner;
 		}
 		public void configure (JobConf conf){}
-
 		}
-
 }
-
 
 ```
 
@@ -67,7 +64,4 @@
 			conf.setOutputPathKeyClass(Text.class);
 		}
 	}
-
-
-
 ```
