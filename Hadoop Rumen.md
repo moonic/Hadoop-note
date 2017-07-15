@@ -5,7 +5,7 @@ Rumen可以单独使用，但通常作为其他组件，比如GridMix (v3) 和 M
 ### Hadoop Rumen设计动机
 
 * 对于任何一个工作在Hadoop之上的外部工具，分析JobHistory日志都是必须的工作之一。
-	* 基于这点考虑，Hadoop应内嵌一个JobHistory日志分析工具。
+	* 基于这点考虑，Hadoop应内嵌一个JobHistory日志分析工具
 	* 统计分析MapReduce作业的各种属性，比如任务运行时间、任务失败率等，基准测试或者模拟器必备的功能，Hadoop Rumen可以为任务生成
 	* Cumulative Distribution Functions (CDF)，这可以用于推断不完整的、失败的或者丢失的任务。
 
@@ -15,11 +15,12 @@ Rumen可以单独使用，但通常作为其他组件，比如GridMix (v3) 和 M
 * Hadoop Rumen已经内置在Apache Hadoop 1.0之上（包括0.21.x，0.22.x，CDH3）各个版本中，
 	* 位于org.apache.hadoop.tools.rumen包中，通常被Hadoop打包成独立的jar包hadoop-tools-[VERSION].jar。Hadoop Rumen由两部分组成：
 		1. Trace Builder
-			* 将JobHistory日志解析成易读的格式，当前仅支持json格式。Trace Builder的输出被称为job trace（作业运行踪迹），我们通过job trace很容易模拟（还原）作业的整个运行过程。
+			* 将JobHistory日志解析成易读的格式，当前仅支持json格式
+			* Trace Builder的输出被称为job trace（作业运行踪迹）job trace很容易模拟（还原）作业的整个运行过程。
 
 	2. Folder
-		* 将job trace按时间进行压缩或者扩张。
-			* 为了方便其他组件，比如GridMix (v3) 和 Mumak，使用。Folder可以将作业运行过程进行等比例缩放，以便在更短的时间内模拟作业运行过程。
+		* job trace按时间进行压缩或者扩张。
+			* 方便其他组件，比如GridMix (v3) 和 Mumak，使用。Folder可以将作业运行过程进行等比例缩放，更短的时间内模拟作业运行过程
 
 
 * 试用Hadoop Rumen
