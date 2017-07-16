@@ -29,7 +29,7 @@
 		* C：getChildren wath create tag zonde
 
 * HDFS 高可用性
-	NameNode 存在单节点故事 SPOF 对于一个NameNode 几区
+	NameNode 存在单节点故事 SPOF 对于一个NameNode 分区
 	  出现意外 整个集群 将无法使用
 	HA Active/Standby 实现在NameNode 热备来解决问题
 	稳定的实现是基于 Qurom journal Manager 机制
