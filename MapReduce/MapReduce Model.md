@@ -2,7 +2,7 @@
 
 
 * Mapper 
-> 普通类作为Mapper 继承MapReduceBase 并实现 Mapper 接口
+> 普通类作为Mapper 继承MapReduceBase 实现 Mapper 接口
 
 * 构造解析方法
 	* void configure jobconf job 
