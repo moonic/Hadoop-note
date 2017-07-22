@@ -2,16 +2,16 @@
 
 * Hive Subassembly
   * 元存储（Metastore ）－存储“系统目录以及关于表、列、分区等的元数据”的组件。
-  * 驱动（Driver ）－ 控制 HiveQL 生命周期的组件，当 HiveQL 查询穿过 Hive时。该驱动管理着会话句柄以及任何会话的统计。
-  * 查询编译器（Query Compiler） － 是一个组件，将HiveQL编译成有向无环图（directed acyclic graph, DAG）形式的map/reduce任务。
-  * 执行引擎 Execution Engine － 是一个组件，依相依性顺序（dependency order）执行由编译器产生的任务。
-  * Hive 服务器 HiveServer － 一个提供“健壮的接口（thrift interface ）、JDBC/ODBC 服务器以及提供一种整合 Hive 和其它应用的”组件。
+  * 驱动（Driver）－控制 HiveQL 生命周期的组件，当 HiveQL 查询穿过 Hive时。该驱动管理着会话句柄以及任何会话的统计。
+  * 查询编译器（Query Compiler） 将HiveQL编译成有向无环图（directed acyclic graph, DAG）形式的map/reduce任务。
+  * 执行引擎 Execution Engine 依相依性顺序（dependency order）执行由编译器产生的任务。
+  * Hive 服务器 HiveServer  提供“健壮的接口（thrift interface ）、JDBC/ODBC 服务器以及提供一种整合 Hive 和其它应用的”组件。
   * 客户端组件 －类似命令行接口CLI（Command Line Interface）， web UI 以及JDBC/ODBC驱动。包含了正反序列化（SerDe）以及对象观察器（ObjectInspector）接口的可扩展接口，类似于前述用户定义函数 UDF （User Defined Function）以及用户定义聚合函数UDAF（User Defined AggregateFunction）接口，允许用户定义自己的列函数。
 
 
-* 执行的过程：
+* 执行的过程
 
-  * HiveQL通过CLI/web UI或者thrift 、 odbc 或 jdbc接口的外部接口提交
+  * HiveQL通过CLI/web UI或者thrift   odbc 或 jdbc接口的外部接口提交
   * 经过complier编译器，运用Metastore中的云数据进行类型检测和语法分析
   * 生成一个逻辑方案(logical plan),然后通过简单的优化处理，产生一个以有向无环图DAG数据结构形式展现的map-reduce任务
 
@@ -55,7 +55,8 @@ hql------->AST------>QB----->OP TREE------->OP TREE------->task tree------->task
 * MapJoin的进一步优化
 
 1. 数据再分区以把控GROUPBY形成的非对称（skews）:用两个MapReduce来做，
-2. 第一个阶段将数据随机分发(或者按DISTINCT列分发在DISTINCT聚合的情况下)至reducers，并且计算聚合值；然后这些聚合结果按照GROUP BY 列分发给在第二个Reducer;
+2. 第一个阶段将数据随机分发(或者按DISTINCT列分发在DISTINCT聚合的情况下)至reducers
+3. 并且计算聚合值；然后这些聚合结果按照GROUP BY 列分发给在第二个Reducer
 
 
 ```
@@ -73,11 +74,11 @@ hql------->AST------>QB----->OP TREE------->OP TREE------->task tree------->task
 
 
 
-* 、执行引擎(execution engine):
+* 执行引擎(execution engine):
   * 按照任务的依赖关系序列来执行
 
 
-* 其它优化：
+* 其它优化
 
 1. Left Semi Join实现in/exists子查询：
 SELECT A.* FROM A LEFT SEMI JOIN B ON(A.KEY = B.KEY AND B.KEY > 100);
