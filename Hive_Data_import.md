@@ -12,14 +12,9 @@ Hive Data import
 ```
 
 hive> create table wyp
-    > (id int, name string,
-    > age int, tel string)
-    > ROW FORMAT DELIMITED
-    > FIELDS TERMINATED BY '\t'
-    > STORED AS TEXTFILE;
-OK
-Time taken: 2.832 seconds
-copy code
+
+
+
 
 这个表很简单，只有四个字段，具体含义我就不解释了。本地文件系统里面有个/home/wyp/wyp.txt文件，内容如下：
 [wyp@master ~]$ cat wyp.txt
@@ -56,11 +51,7 @@ Found 1 items
 
 ```
 [wyp@master /home/q/hadoop-2.2.0]$ bin/hadoop fs -cat /home/wyp/add.txt
-5       wyp1    23      131212121212
-6       wyp2    24      134535353535
-7       wyp3    25      132453535353
-8       wyp4    26      154243434355
-复制代码
+
 
 上面是需要插入数据的内容，这个文件是存放在HDFS上/home/wyp目录（和一中提到的不同，一中提到的文件是存放在本地文件系统上）里面，我们可以通过下面的命令将这个文件里面的内容导入到Hive表中，具体操作如下：
 
@@ -72,16 +63,9 @@ OK
 Time taken: 0.47 seconds
 
 hive> select * from wyp;
-OK
-5       wyp1    23      131212121212
-6       wyp2    24      134535353535
-7       wyp3    25      132453535353
-8       wyp4    26      154243434355
-1       wyp     25      13188888888888
-2       test    30      13888888888888
-3       zs      34      899314121
-Time taken: 0.096 seconds, Fetched: 7 row(s)
-复制代码
+
+
+
 ```
 
 * 数据的确导入到wyp表中了！请注意load data inpath ‘/home/wyp/add.txt’ into table wyp;里面是没有local这个单词的，这个是和一中的区别。
@@ -92,16 +76,7 @@ Time taken: 0.096 seconds, Fetched: 7 row(s)
 
 ```
 hive> create table test(
-    > id int, name string
-    > ,tel string)
-    > partitioned by
-    > (age int)
-    > ROW FORMAT DELIMITED
-    > FIELDS TERMINATED BY '\t'
-    > STORED AS TEXTFILE;
-OK
-Time taken: 0.261 seconds
-复制代码
+
 
 大体和wyp表的建表语句类似，只不过test表里面用age作为了分区字段。对于分区，这里在做解释一下：
 分区：在Hive中，表的每一个分区对应表下的相应目录，所有分区的数据都是存储在对应的目录中。比如wyp表有dt和city两个分区，则对应dt=20131218,city=BJ对应表的目录为/user/hive/warehouse/dt=20131218/city=BJ，所有属于这个分区的数据都存放在这个目录中。
@@ -119,16 +94,8 @@ OK
 Time taken: 19.125 seconds
 
 hive> select * from test;
-OK
-5       wyp1    131212121212    25
-6       wyp2    134535353535    25
-7       wyp3    132453535353    25
-8       wyp4    154243434355    25
-1       wyp     13188888888888  25
-2       test    13888888888888  25
-3       zs      899314121       25
-Time taken: 0.126 seconds, Fetched: 7 row(s)
-复制代码
+
+
 这里做一下说明：
 我们知道我们传统数据块的形式insert into table values（字段1，字段2），这种形式hive是不支持的。
 
@@ -147,26 +114,14 @@ OK
 Time taken: 17.712 seconds
 
 hive> select * from test;
-OK
-5       wyp1    131212121212    23
-6       wyp2    134535353535    24
-7       wyp3    132453535353    25
-1       wyp     13188888888888  25
-8       wyp4    154243434355    26
-2       test    13888888888888  30
-3       zs      899314121       34
-Time taken: 0.399 seconds, Fetched: 7 row(s)
-复制代码
+
 
 这种方法叫做动态分区插入，但是Hive中默认是关闭的，所以在使用前需要先把hive.exec.dynamic.partition.mode设置为nonstrict。
 当然，Hive也支持insert overwrite方式来插入数据，从字面我们就可以看出，overwrite是覆盖的意思
 执行完这条语句的时候，相应数据目录下的数据将会被覆盖！而insert into则不会，注意两者之间的区别。例子如下：
 
 hive> insert overwrite table test
-    > PARTITION (age)
-    > select id, name, tel, age
-    > from wyp;
-复制代码
+
 
 更可喜的是，Hive还支持多表插入，什么意思呢？在Hive中，我们可以把insert语句倒过来，把from放在最前面，它的执行效果和放在后面是一样的，如下：
 hive> show create table test3;
@@ -177,20 +132,9 @@ CREATE  TABLE test3(
 Time taken: 0.277 seconds, Fetched: 18 row(s)
 
 hive> from wyp
-    > insert into table test
-    > partition(age)
-    > select id, name, tel, age
-    > insert into table test3
-    > select id, name
-    > where age>25;
 
 hive> select * from test3;
-OK
-8       wyp4
-2       test
-3       zs
-Time taken: 4.308 seconds, Fetched: 3 row(s)
-复制代码
+
 
 可以在同一个查询中使用多个insert子句，这样的好处是我们只需要扫描一遍源表就可以生成多个不相交的输出。这个很酷吧！
 
@@ -204,16 +148,8 @@ hive> create table test4
     > from wyp;
 
 hive> select * from test4;
-OK
-5       wyp1    131212121212
-6       wyp2    134535353535
-7       wyp3    132453535353
-8       wyp4    154243434355
-1       wyp     13188888888888
-2       test    13888888888888
-3       zs      899314121
-Time taken: 0.089 seconds, Fetched: 7 row(s)
-复制代码
+
+
 ```
 
 * 数据就插入到test4表中去了，CTAS操作是原子的，因此如果select查询由于某种原因而失败，新表是不会创建的！
