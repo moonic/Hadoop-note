@@ -1,8 +1,8 @@
 ### HDFS Data
-> HDFS中存放的数据文件很大，以数据节点的形式保存在文件中Dat_Node
+> HDFS中存放的数据文件很大，以数据节点的形式保存在文件中Data_Node
 
 * 读取数据
-  * 先调用FileSystem对象的open方法，其实获取的是一个DistributedFileSystem的实例。
+  * 先调用FileSystem对象的open方法 获取的是一个DistributedFileSystem的实例
   * DistributedFileSystem通过RPC(远程过程调用)获得文件的第一批block的locations
     * 同一block按照重复数会返回多个locations这些locations按照hadoop拓扑结构排序，距离客户端近的排在前面。
   * 前两步会返回一个FSDataInputStream对象，该对象会被封装成 DFSInputStream对象
@@ -27,4 +27,4 @@
   * DFSOutputStream 还有一个队列叫 ack queue，也是由 packet 组成，等待DataNode的收到响应
     * 当pipeline中的所有DataNode都表示已经收到的时候，这时akc queue才会把对应的packet包移除掉。
   * 客户端完成写数据后，调用close方法关闭写入流。
-  * DataStreamer 把剩余的包都刷到 pipeline 里，然后等待 ack 信息，收到最后一个 ack 后，通知 DataNode 把文件标示为已完成。
+  * DataStreamer 把剩余的包都刷到 pipeline 里 等待 ack 信息，收到最后一个 ack 后，通知 DataNode 把文件标示为已完成。
