@@ -1,12 +1,6 @@
 # MapReduce
 > 用于数据处理的编程模型 可以让Hadoop运行各种语言编写的MapReduce程序
 
-
-* 一个气象数据集合
-
-  * 获取数据 国家气象局爬
-  * 分析数据 Unix Tools 性能标准
- 
 * 使用Hadoop进行数据分析
   * 提供的并行处理机制将 MapReuce作业
   
@@ -34,9 +28,7 @@ Java MapReuce
 
 			int airTemperature;
 			if(linme.charAt(54))
-
 		}
-
 	}
 ```
 
