@@ -14,25 +14,13 @@ Hive Data import
 hive> create table wyp
 
 
-
-
 这个表很简单，只有四个字段，具体含义我就不解释了。本地文件系统里面有个/home/wyp/wyp.txt文件，内容如下：
 [wyp@master ~]$ cat wyp.txt
-1       wyp     25      13188888888888
-2       test    30      13888888888888
-3       zs      34      899314121
-复制代码
+
 
 wyp.txt文件中的数据列之间是使用\t分割的，可以通过下面的语句将这个文件里面的数据导入到wyp表里面，操作如下：
 hive> load data local inpath 'wyp.txt' into table wyp;
-Copying data from file:/home/wyp/wyp.txt
-Copying file: file:/home/wyp/wyp.txt
-Loading data to table default.wyp
-Table default.wyp stats:
-[num_partitions: 0, num_files: 1, num_rows: 0, total_size: 67]
-OK
-Time taken: 5.967 seconds
-复制代码
+
 
 这样就将wyp.txt里面的内容导入到wyp表里面去了，可以到wyp表的数据目录下查看，如下命令：
 
@@ -56,15 +44,10 @@ Found 1 items
 上面是需要插入数据的内容，这个文件是存放在HDFS上/home/wyp目录（和一中提到的不同，一中提到的文件是存放在本地文件系统上）里面，我们可以通过下面的命令将这个文件里面的内容导入到Hive表中，具体操作如下：
 
 hive> load data inpath '/home/wyp/add.txt' into table wyp;
-Loading data to table default.wyp
-Table default.wyp stats:
-[num_partitions: 0, num_files: 2, num_rows: 0, total_size: 215]
-OK
-Time taken: 0.47 seconds
+
+
 
 hive> select * from wyp;
-
-
 
 ```
 
