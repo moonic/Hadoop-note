@@ -8,9 +8,9 @@ Hive Data import
 
 
 * 从本地文件系统中导入数据到Hive表
-  * 先在Hive里面创建好表，如下：
+  * 先在Hive里面创建好表
+ 
 ```
-
 hive> create table wyp
 
 
@@ -32,30 +32,34 @@ Found 1 items
 ```
 
 * 注意的是：
-  * 和我们熟悉的关系型数据库不一样，Hive现在还不支持在insert语句里面直接给出一组记录的文字形式，也就是说，Hive并不支持INSERT INTO …. VALUES形式的语句。
+  * 和我们熟悉的关系型数据库不一样，Hive现在还不支持在insert语句里面直接给出一组记录的文字形式
+  * 不支持INSERT INTO …. VALUES形式的语句。
 
 * HDFS上导入数据到hive表
-  * 从本地文件系统中将数据导入到Hive表的过程中，其实是先将数据临时复制到HDFS的一个目录下（典型的情况是复制到上传用户的HDFS home目录下,比如/home/wyp/），然后再将数据从那个临时目录下移动（注意，这里说的是移动，不是复制！）到对应的Hive表的数据目录里面。既然如此，那么Hive肯定支持将数据直接从HDFS上的一个目录移动到相应Hive表的数据目录下，假设有下面这个文件/home/wyp/add.txt，具体的操作如下：
+  * 从本地文件系统中将数据导入到Hive表的过程中 
+  * 是先将数据临时复制到HDFS的一个目录下，假设有下面这个文件/home/wyp/add.txt，具体的操作如下：
 
 ```
 [wyp@master /home/q/hadoop-2.2.0]$ bin/hadoop fs -cat /home/wyp/add.txt
 
 
-上面是需要插入数据的内容，这个文件是存放在HDFS上/home/wyp目录（和一中提到的不同，一中提到的文件是存放在本地文件系统上）里面，我们可以通过下面的命令将这个文件里面的内容导入到Hive表中，具体操作如下：
+需要插入数据的内容，这个文件是存放在HDFS上/home/wyp目录
+（和一中提到的不同，一中提到的文件是存放在本地文件系统上）里面
+我们可以通过下面的命令将这个文件里面的内容导入到Hive表中，具体操作如下
 
 hive> load data inpath '/home/wyp/add.txt' into table wyp;
-
-
 
 hive> select * from wyp;
 
 ```
 
-* 数据的确导入到wyp表中了！请注意load data inpath ‘/home/wyp/add.txt’ into table wyp;里面是没有local这个单词的，这个是和一中的区别。
+* 数据的确导入到wyp表中了
+  * 注意load data inpath ‘/home/wyp/add.txt’ into table wyp
+  * 里面是没有local这个单词的，这个是和一中的区别。
 
 
 * 从别的表中查询出相应的数据并导入到Hive表中
-`* 假设Hive中有test表，其建表语句如下所示：
+  * 假设Hive中有test表，其建表语句如下所示：
 
 ```
 hive> create table test(
