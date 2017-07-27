@@ -1,12 +1,18 @@
 ### Hive subassembly
 
 * Hive Subassembly
-  * 元存储（Metastore ）－存储“系统目录以及关于表、列、分区等的元数据”的组件。
-  * 驱动（Driver）－控制 HiveQL 生命周期的组件，当 HiveQL 查询穿过 Hive时。该驱动管理着会话句柄以及任何会话的统计。
-  * 查询编译器（Query Compiler） 将HiveQL编译成有向无环图（directed acyclic graph, DAG）形式的map/reduce任务。
-  * 执行引擎 Execution Engine 依相依性顺序（dependency order）执行由编译器产生的任务。
-  * Hive 服务器 HiveServer  提供“健壮的接口（thrift interface ）、JDBC/ODBC 服务器以及提供一种整合 Hive 和其它应用的”组件。
-  * 客户端组件 －类似命令行接口CLI（Command Line Interface）， web UI 以及JDBC/ODBC驱动。包含了正反序列化（SerDe）以及对象观察器（ObjectInspector）接口的可扩展接口，类似于前述用户定义函数 UDF （User Defined Function）以及用户定义聚合函数UDAF（User Defined AggregateFunction）接口，允许用户定义自己的列函数。
+  * 元存储（Metastore ）
+    * 存储系统目录以及关于表、列、分区等的元数据”的组件。
+  * 驱动（Driver）
+    * 控制 HiveQL 生命周期的组件，当 HiveQL 查询穿过 Hive时。该驱动管理着会话句柄以及任何会话的统计。
+  * 查询编译器（Query Compiler） 
+    * 将HiveQL编译成有向无环图（directed acyclic graph, DAG）形式的map/reduce任务。
+  * 执行引擎 Execution Engine
+    * 依相依性顺序（dependency order）执行由编译器产生的任务。
+  * Hive 服务器 HiveServer 
+    * 提供“健壮的接口（thrift interface ）、JDBC/ODBC 服务器以及提供一种整合 Hive 和其它应用的”组件。
+  * 客户端组件 
+    * 类似命令行接口CLI（Command Line Interface）， web UI 以及JDBC/ODBC驱动。包含了正反序列化（SerDe）以及对象观察器 （ObjectInspector）接口的可扩展接口，类似于前述用户定义函数 UDF （User Defined Function）以及用户定义聚合函数UDAF（User Defined AggregateFunction）接口，允许用户定义自己的列函数。
 
 
 * 执行的过程
