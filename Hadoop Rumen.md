@@ -2,7 +2,7 @@
 >Hadoop MapReduce设计的日志解析和分析工具，它能够将JobHistory 日志解析成有意义的数据并格式化存储
 Rumen可以单独使用，但通常作为其他组件，比如GridMix (v3) 和 Mumak的基础库。
 
-### Hadoop Rumen设计动机
+## Hadoop Rumen设计动机
 
 * 对于任何一个工作在Hadoop之上的外部工具，分析JobHistory日志都是必须的工作之一。
 	* 基于这点考虑，Hadoop应内嵌一个JobHistory日志分析工具
@@ -10,8 +10,7 @@ Rumen可以单独使用，但通常作为其他组件，比如GridMix (v3) 和 M
 		* 比如任务运行时间、任务失败率等，基准测试或者模拟器必备的功能，Hadoop Rumen可以为任务生成
 	* Cumulative Distribution Functions (CDF)，这可以用于推断不完整的、失败的或者丢失的任务。
 
-
-### Hadoop Rumen基本构成
+## Hadoop Rumen基本构成
 
 * Hadoop Rumen已经内置在Apache Hadoop 1.0之上（包括0.21.x，0.22.x，CDH3）各个版本中，
 	* 位于org.apache.hadoop.tools.rumen包中，通常被Hadoop打包成独立的jar包hadoop-tools-[VERSION].jar。Hadoop Rumen由两部分组成：
