@@ -3,33 +3,36 @@
 * Hadoop 安全问题
 * 用户到服务器的认证问题
 
+* NameNode，,JobTracker上没有用户认证
+  * 用户可以伪装成其他用户入侵到一个HDFS 或者MapReduce集群上。
+  * DataNode上没有认证
+  * Datanode对读入输出并没有认证。导致如果一些客户端如果知道block的ID，就可以任意的访问DataNode上block的数据
+  * JobTracker上没有认证
+  * 可以任意的杀死或更改用户的jobs，可以更改JobTracker的工作状态
+* 服务器到服务器的认证问题
+  * 没有DataNode, TaskTracker的认证
+  * 用户可以伪装成datanode ,tasktracker，去接受JobTracker, Namenode的任务指派。
 
-NameNode，,JobTracker上没有用户认证
-用户可以伪装成其他用户入侵到一个HDFS 或者MapReduce集群上。
-DataNode上没有认证
-Datanode对读入输出并没有认证。导致如果一些客户端如果知道block的ID，就可以任意的访问DataNode上block的数据
-JobTracker上没有认证
-可以任意的杀死或更改用户的jobs，可以更改JobTracker的工作状态
-2.2  服务器到服务器的认证问题
-没有DataNode, TaskTracker的认证
-用户可以伪装成datanode ,tasktracker，去接受JobTracker, Namenode的任务指派。
-3. Kerberos能解决的Hadoop安全认证问题
-kerberos实现的是机器级别的安全认证，也就是前面提到的服务到服务的认证问题。事先对集群中确定的机器由管理员手动添加到kerberos数据库中，在KDC上分别产生主机与各个节点的keytab(包含了host和对应节点的名字，还有他们之间的密钥)，并将这些keytab分发到对应的节点上。通过这些keytab文件，节点可以从KDC上获得与目标节点通信的密钥，进而被目标节点所认证，提供相应的服务，防止了被冒充的可能性。
+*  Kerberos能解决的Hadoop安全认证问题
+  * kerberos实现的是机器级别的安全认证，也就是前面提到的服务到服务的认证问题。事先对集群中确定的机器由管理员手动添加到kerberos数据库中，在KDC上分别产生主机与各个节点的keytab(包含了host和对应节点的名字，还有他们之间的密钥)，并将这些keytab分发到对应的节点上。通过这些keytab文件，节点可以从KDC上获得与目标节点通信的密钥，进而被目标节点所认证，提供相应的服务，防止了被冒充的可能性。
 解决服务器到服务器的认证
-由于kerberos对集群里的所有机器都分发了keytab，相互之间使用密钥进行通信，确保不会冒充服务器的情况。集群中的机器就是它们所宣称的，是可靠的。
+  * 由于kerberos对集群里的所有机器都分发了keytab，相互之间使用密钥进行通信，确保不会冒充服务器的情况。集群中的机器就是它们所宣称的，是可靠的。
 防止了用户伪装成Datanode，Tasktracker，去接受JobTracker，Namenode的任务指派。
-解决client到服务器的认证
-Kerberos对可信任的客户端提供认证，确保他们可以执行作业的相关操作。防止用户恶意冒充client提交作业的情况。
-用户无法伪装成其他用户入侵到一个HDFS 或者MapReduce集群上
-用户即使知道datanode的相关信息，也无法读取HDFS上的数据
-用户无法发送对于作业的操作到JobTracker上
-对用户级别上的认证并没有实现
-无法控制用户提交作业的操作。不能够实现限制用户提交作业的权限。不能控制哪些用户可以提交该类型的作业，哪些用户不能提交该类型的作业。这些由ACL模块控制（参考）
-4. Kerberos工作原理介绍
-4.1  基本概念
-Princal(安全个体)：被认证的个体，有一个名字和口令
-KDC(key distribution center ) : 是一个网络服务，提供ticket 和临时会话密钥
-Ticket：一个记录，客户用它来向服务器证明自己的身份，包括客户标识、会话密钥、时间戳。
+
+* 解决client到服务器的认证
+  * Kerberos对可信任的客户端提供认证，确保他们可以执行作业的相关操作。防止用户恶意冒充client提交作业的情况。
+    * 用户无法伪装成其他用户入侵到一个HDFS 或者MapReduce集群上
+    * 用户即使知道datanode的相关信息，也无法读取HDFS上的数据
+    * 用户无法发送对于作业的操作到JobTracker上
+    * 对用户级别上的认证并没有实现
+    * 无法控制用户提交作业的操作。不能够实现限制用户提交作业的权限。不能控制哪些用户可以提交该类型的作业，哪些用户不能提交该类型的作业。这些由ACL模块控制（参考）
+
+
+*  Kerberos工作原理介绍
+  * 基本概念
+    * Princal(安全个体)：被认证的个体，有一个名字和口令
+    * KDC(key distribution center ) : 是一个网络服务，提供ticket 和临时会话密钥
+    * Ticket：一个记录，客户用它来向服务器证明自己的身份，包括客户标识、会话密钥、时间戳。
 AS (Authentication Server)： 认证服务器
 TSG(Ticket Granting Server)： 许可证服务器
 4.2  kerberos 工作原理
