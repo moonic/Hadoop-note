@@ -1,17 +1,28 @@
-（1） 用户分组管理。用于按组为单位组织管理，某个用户只能向固定分组中提交作业，只能使用固定分组中配置的资源；同时可以限制每个用户提交的作业数，使用的资源量等
-（2） 作业管理。包括作业提交权限控制，作业运行状态查看权限控制等。如：可限定可提交作业的用户；可限定可查看作业运行状态的用户；可限定普通用户只能修改自己作业的优先级，kill自己的作业；高级用户可以控制所有作业等。
-想要支持权限管理需使用Fair Scheduler或者 Capacity Scheduler（作业管理需用到Hadoop的ACL(Access Control List)功能，启用该功能需选择一个支持多队列管理的调度器）
-2.	基本术语
+# Hadoop permission
+
+1.  用户分组管理。
+  * 用于按组为单位组织管理，某个用户只能向固定分组中提交作业，只能使用固定分组中配置的资源；同时可以限制每个用户提交的作业数，使用的资源量等
+2.  作业管理
+  * 包括作业提交权限控制，作业运行状态查看权限控制等。如：可限定可提交作业的用户；可限定可查看作业运行状态的用户；可限定普通用户只能修改自己作业的优先级，kill自己的作业；高级用户可以控制所有作业等。
+
+* 想要支持权限管理需使用Fair Scheduler或者 Capacity Scheduler（作业管理需用到Hadoop的ACL(Access Control List)功能，启用该功能需选择一个支持多队列管理的调度器）
+
+
+##	基本术语
 (1)  用户（User）：Hadoop使用Linux用户管理，Hadoop中的用户就是Linux中的用户
 (2) 分组（group）：Hadoop使用Linux分组管理，Hadoop中的分组就是Linux中的分组
 (3) 池（pool）：Hadoop Fair Scheduler中的概念，一个pool可以是一个user，一个group，或者一个queue。
 (4) 队列（Queue）：队列是Hadoop提出的概念，一个Queue可以由任意几个Group和任意几个User组成。
-3.	Hadoop中Fair Scheduler与Capacity Scheduler介绍
-3.1	Fair Scheduler
+
+
+## 	Hadoop中Fair Scheduler与Capacity Scheduler介绍
+* 	Fair Scheduler
 Facebook开发的适合共享环境的调度器，支持多用户多分组管理，每个分组可以配置资源量，也可限制每个用户和每个分组中的并发运行作业数量；每个用户的作业有优先级，优先级越高分配的资源越多。
-3.2	Capacity Scheduler
+
+* Capacity Scheduler
 Yahoo开发的适合共享环境的调度器，支持多用户多队列管理，每个队列可以配置资源量，也可限制每个用户和每个队列的并发运行作业数量，也可限制每个作业使用的内存量；每个用户的作业有优先级，在单个队列中，作业按照先来先服务（实际上是先按照优先级，优先级相同的再按照作业提交时间）的原则进行调度。
-3.3	Fair Scheduler vs Capacity Scheduler
+* Fair Scheduler vs Capacity Scheduler
+
 （1）	相同点
 [1] 均支持多用户多队列，即：适用于多用户共享集群的应用环境
 [2] 单个队列均支持优先级和FIFO调度方式
@@ -29,45 +40,6 @@ Fair Scheduler不允许配置每个user使用的slot数上限，但允许抢占�
 具体参考：
 http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+Hadoop+Daemons
 在mapred-site.xml中添加以下内容：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
 <property>
  
   <name>mapred.acls.enabled</name>
