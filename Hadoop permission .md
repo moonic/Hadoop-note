@@ -9,34 +9,36 @@
 
 
 ##	基本术语
-(1)  用户（User）：Hadoop使用Linux用户管理，Hadoop中的用户就是Linux中的用户
-(2) 分组（group）：Hadoop使用Linux分组管理，Hadoop中的分组就是Linux中的分组
-(3) 池（pool）：Hadoop Fair Scheduler中的概念，一个pool可以是一个user，一个group，或者一个queue。
-(4) 队列（Queue）：队列是Hadoop提出的概念，一个Queue可以由任意几个Group和任意几个User组成。
+1. 用户（User）：Hadoop使用Linux用户管理，Hadoop中的用户就是Linux中的用户
+2. 分组（group）：Hadoop使用Linux分组管理，Hadoop中的分组就是Linux中的分组
+3. 池（pool）：Hadoop Fair Scheduler中的概念，一个pool可以是一个user，一个group，或者一个queue。
+4. 队列（Queue）：队列是Hadoop提出的概念，一个Queue可以由任意几个Group和任意几个User组成。
 
 
 ## 	Hadoop中Fair Scheduler与Capacity Scheduler介绍
-* 	Fair Scheduler
-Facebook开发的适合共享环境的调度器，支持多用户多分组管理，每个分组可以配置资源量，也可限制每个用户和每个分组中的并发运行作业数量；每个用户的作业有优先级，优先级越高分配的资源越多。
+* Fair Scheduler
+  * Facebook开发的适合共享环境的调度器，支持多用户多分组管理，每个分组可以配置资源量，也可限制每个用户和每个分组中的并发运行作业数量；每个用户的作业有优先级，优先级越高分配的资源越多。
 
 * Capacity Scheduler
-Yahoo开发的适合共享环境的调度器，支持多用户多队列管理，每个队列可以配置资源量，也可限制每个用户和每个队列的并发运行作业数量，也可限制每个作业使用的内存量；每个用户的作业有优先级，在单个队列中，作业按照先来先服务（实际上是先按照优先级，优先级相同的再按照作业提交时间）的原则进行调度。
-* Fair Scheduler vs Capacity Scheduler
+  * Yahoo开发的适合共享环境的调度器，支持多用户多队列管理，每个队列可以配置资源量，也可限制每个用户和每个队列的并发运行作业数量，也可限制每个作业使用的内存量；每个用户的作业有优先级，在单个队列中，作业按照先来先服务（实际上是先按照优先级，优先级相同的再按照作业提交时间）的原则进行调度。
 
-（1）	相同点
-[1] 均支持多用户多队列，即：适用于多用户共享集群的应用环境
-[2] 单个队列均支持优先级和FIFO调度方式
-[3] 均支持资源共享，即某个queue中的资源有剩余时，可共享给其他缺资源的queue
-（2）	不同点
-[1] 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；而公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
-[2] 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot；而公平调度器对这种特殊的job无能为力，只能杀掉这种task。
-（3）	功能上的不同
-Fair Scheduler不允许配置每个user使用的slot数上限，但允许抢占资源 ；而Capacity scheduler允许配置每个user使用的slot数上限，但暂时不支持资源抢占 。
-4.	用户分组管理
-以Fair Scheduler（http://hadoop.apache.org/common/docs/r0.20.0/fair_scheduler.html ）为例,按以下步骤进行：
-(1)	将Fair Scheduler的jar包拷贝到lib中
+* Fair Scheduler vs Capacity Scheduler
+  * 相同点
+    1. 均支持多用户多队列，即：适用于多用户共享集群的应用环境
+    2. 单个队列均支持优先级和FIFO调度方式
+    3. 均支持资源共享，即某个queue中的资源有剩余时，可共享给其他缺资源的queue
+  * 不同点
+    1. 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；而公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
+    2. 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot；而公平调度器对这种特殊的job无能为力，只能杀掉这种task。
+    3. 	功能上的不同
+  * Fair Scheduler不允许配置每个user使用的slot数上限，但允许抢占资源 ；而Capacity scheduler允许配置每个user使用的slot数上限，但暂时不支持资源抢占 。
+
+
+* 用户分组管理
+  * 以Fair Scheduler（http://hadoop.apache.org/common/docs/r0.20.0/fair_scheduler.html ）为例,按以下步骤进行：
+    1. 将Fair Scheduler的jar包拷贝到lib中
 如：cp ${HADOOP_HOME}/contrib/fairscheduler/hadoop-fairscheduler-0.20.2+320.jar ${HADOOP_HOME}/lib/
-(2)	配置Queue相关信息
+  	2. 配置Queue相关信息
 具体参考：
 http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+Hadoop+Daemons
 在mapred-site.xml中添加以下内容：
@@ -80,13 +82,14 @@ http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+
  
 </property>
 说明：
-【1】	属性mapred.queue.names是queue的所有名字，在这一名字中，必须有一个叫“default”的queue
-【2】	每个queue均有一个属性mapred.queue.<queue-name>.acl-submit-job，用于指定哪些user或者group可以向该queue中提交作业
-【3】	每个queue均有一个属性mapred.queue.<queue-name>.acl-administer-jobs，用于指定哪些user或者group可以管理该queue中的所有作业，即可以kill作业，查看task运行状态。一般而言，对于每个队列，该选项为空即可，表示每个user只能管理自己的作业。
-【4】	每个queue拥有的资源量和其他信息均在另外一个配置文件中指定（对于公平调度器，可以在fair-scheduler.xml中指定）
-【5】	mapred.queue.<queue-name>.acl-submit-job和mapred.queue.<queue-name>.acl-administer-jobs配置方法如下：
+1. 属性mapred.queue.names是queue的所有名字，在这一名字中，必须有一个叫“default”的queue
+2. 每个queue均有一个属性mapred.queue.<queue-name>.acl-submit-job，用于指定哪些user或者group可以向该queue中提交作业
+3. 每个queue均有一个属性mapred.queue.<queue-name>.acl-administer-jobs，用于指定哪些user或者group可以管理该queue中的所有作业，即可以kill作业，查看task运行状态。一般而言，对于每个队列，该选项为空即可，表示每个user只能管理自己的作业。
+4. 每个queue拥有的资源量和其他信息均在另外一个配置文件中指定（对于公平调度器，可以在fair-scheduler.xml中指定）
+5. mapred.queue.<queue-name>.acl-submit-job和mapred.queue.<queue-name>.acl-administer-jobs配置方法如下：
 用户和用户组之间用空格分开，用户之间用“，”分割，用户组之间用“，”分割，如果queue的属性值中只有用户组，则前面保留一个空格。
-(3)	配置fair scheduler相关信息
+
+* 配置fair scheduler相关信息
 在mapred-site.xml中添加以下内容：
 
 <property>
@@ -116,9 +119,6 @@ http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+
 mapred.fairscheduler.poolnameproperty有三个可用值：默认情况下是user.name，即每个用户独自一个pool；group.name，即一个linux group一个pool，mapred.job.queue.name，即一个queue一个pool，如果要支持“作业管理”，需使用最后一种配置。
 (4)	创建文件fair-scheduler.xml，并添加以下内容：
 
-31
-32
-33
 <?xml version="1.0"?>
  
 <allocations>
