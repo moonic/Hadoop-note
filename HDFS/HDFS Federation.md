@@ -1,13 +1,13 @@
 # HDFS Federation
 
 * 目前HDFS包含两层结构：
-  1. Namespace 管理目录，文件和数据块。
+  * Namespace 管理目录，文件和数据块。
     * 它支持常见的文件系统操作，如创建文件，修改文件，删除文件等。
-  2. Block Storage有两部分组成：
-  3. Block Management维护集群中datanode的基本关系，它支持数据块相关的操作
+  * Block Storage有两部分组成：
+    * Block Management维护集群中datanode的基本关系，它支持数据块相关的操作
     * 如：创建数据块，删除数据块等，同时对管理副本的复制和存放
     * Block Storage的这两部分分别在namenode和datanode上实现，所以该模块由namenode和datanode分工完成
-  4. Physical Storage存储实际的数据块并提供针对数据块的读写服务。
+  * Physical Storage存储实际的数据块并提供针对数据块的读写服务。
 
 
 * 局限性
