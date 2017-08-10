@@ -1,6 +1,6 @@
 # Hadoop permission
 
-1.  用户分组管理。
+1.  用户分组管理
   * 用于按组为单位组织管理，某个用户只能向固定分组中提交作业，只能使用固定分组中配置的资源；同时可以限制每个用户提交的作业数，使用的资源量等
 2.  作业管理
   * 包括作业提交权限控制，作业运行状态查看权限控制等。如：可限定可提交作业的用户；可限定可查看作业运行状态的用户；可限定普通用户只能修改自己作业的优先级，kill自己的作业；高级用户可以控制所有作业等。
@@ -9,6 +9,7 @@
 
 
 ##	基本术语
+
 1. 用户（User）：Hadoop使用Linux用户管理，Hadoop中的用户就是Linux中的用户
 2. 分组（group）：Hadoop使用Linux分组管理，Hadoop中的分组就是Linux中的分组
 3. 池（pool）：Hadoop Fair Scheduler中的概念，一个pool可以是一个user，一个group，或者一个queue。
@@ -39,55 +40,42 @@
     1. 将Fair Scheduler的jar包拷贝到lib中
 如：cp ${HADOOP_HOME}/contrib/fairscheduler/hadoop-fairscheduler-0.20.2+320.jar ${HADOOP_HOME}/lib/
   	2. 配置Queue相关信息
+
 具体参考：
 http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+Hadoop+Daemons
 在mapred-site.xml中添加以下内容：
 <property>
  
   <name>mapred.acls.enabled</name>
- 
   <value>true</value>
- 
 </property>
- 
 <property>
- 
   <name>mapred.queue.names</name>
- 
   <value>my_group,default</value>
- 
 </property>
  
 <property>
- 
   <name>mapred.queue.my_queue.acl-submit-job</name>
- 
   <value> my_group</value>
- 
 </property>
  
 <property>
- 
   <name>mapred.queue.default.acl-administer-jobs</name>
- 
-  <value></value>
- 
+ <value></value>
 </property>
  
 <property>
- 
   <name>mapred.queue.my_queue.acl-administer-jobs</name>
- 
   <value></value>
- 
 </property>
-说明：
-1. 属性mapred.queue.names是queue的所有名字，在这一名字中，必须有一个叫“default”的queue
-2. 每个queue均有一个属性mapred.queue.<queue-name>.acl-submit-job，用于指定哪些user或者group可以向该queue中提交作业
-3. 每个queue均有一个属性mapred.queue.<queue-name>.acl-administer-jobs，用于指定哪些user或者group可以管理该queue中的所有作业，即可以kill作业，查看task运行状态。一般而言，对于每个队列，该选项为空即可，表示每个user只能管理自己的作业。
-4. 每个queue拥有的资源量和其他信息均在另外一个配置文件中指定（对于公平调度器，可以在fair-scheduler.xml中指定）
-5. mapred.queue.<queue-name>.acl-submit-job和mapred.queue.<queue-name>.acl-administer-jobs配置方法如下：
-用户和用户组之间用空格分开，用户之间用“，”分割，用户组之间用“，”分割，如果queue的属性值中只有用户组，则前面保留一个空格。
+* 说明
+  1. 属性mapred.queue.names是queue的所有名字，在这一名字中，必须有一个叫“default”的queue
+  2. 每个queue均有一个属性mapred.queue.<queue-name>.acl-submit-job，用于指定哪些user或者group可以向该queue中提交作业
+  3. 每个queue均有一个属性mapred.queue.<queue-name>.acl-administer-jobs，用于指定哪些user或者group可以管理该queue中的所有作业，即可以kill作业，查看task运行状态。一般而言，对于每个队列，该选项为空即可，表示每个user只能管理自己的作业。
+  4. 每个queue拥有的资源量和其他信息均在另外一个配置文件中指定（对于公平调度器，可以在fair-scheduler.xml中指定）
+  5. mapred.queue.<queue-name>.acl-submit-job和mapred.queue.<queue-name>.acl-administer-jobs配置方法如下：
+
+* 用户和用户组之间用空格分开，用户之间用“，”分割，用户组之间用“，”分割，如果queue的属性值中只有用户组，则前面保留一个空格。
 
 * 配置fair scheduler相关信息
 在mapred-site.xml中添加以下内容：
@@ -115,9 +103,14 @@ http://hadoop.apache.org/common/docs/r0.20.2/cluster_setup.html#Configuring+the+
   <value>/home/XXX/hadoop/conf/fair-scheduler.xml</value>
  
 </property>
-说明：
-mapred.fairscheduler.poolnameproperty有三个可用值：默认情况下是user.name，即每个用户独自一个pool；group.name，即一个linux group一个pool，mapred.job.queue.name，即一个queue一个pool，如果要支持“作业管理”，需使用最后一种配置。
-(4)	创建文件fair-scheduler.xml，并添加以下内容：
+
+* 说明
+  * mapred.fairscheduler.poolnameproperty有三个可用值
+  * 默认情况下是user.name，即每个用户独自一个pool
+  * group.name，即一个linux group一个pool，mapred.job.queue.name，即一个queue一个pool，如果要支持“作业管理”，需使用最后一种配置。
+  
+
+* 创建文件fair-scheduler.xml，并添加以下内容：
 
 <?xml version="1.0"?>
  
@@ -152,20 +145,22 @@ mapred.fairscheduler.poolnameproperty有三个可用值：默认情况下是user
 <fairSharePreemptionTimeout>600</fairSharePreemptionTimeout>
  
 </allocations>
-说明：
-【1】各个字段的含义
+
+* 各个字段的含义
 <pool></pool>之间配置的是每个pool的信息，主要如下：
-(a) minMaps：该pool可使用的map slot数
-(b) minReduces：该pool可使用的reduce slot数
-(c) maxRunningJobs：该pool最大运行作业数
-(d) minSharePreemptionTimeout：该pool抢占资源的时间间隔，即本属于自己的资源在改时间内拿不到便会抢占。
-(e) Weight：pool的权重，该值越大，能够从共享区（有一些pool中的资源用不完，会共享给其他pool）中获取的资源越多。
+1. minMaps：该pool可使用的map slot数
+2. minReduces：该pool可使用的reduce slot数
+3. maxRunningJobs：该pool最大运行作业数
+4. minSharePreemptionTimeout：该pool抢占资源的时间间隔，即本属于自己的资源在改时间内拿不到便会抢占。
+5. Weight：pool的权重，该值越大，能够从共享区（有一些pool中的资源用不完，会共享给其他pool）中获取的资源越多。
 <user></user>之间配置某个用户的约束：
 maxRunningJobs：该用户可同时运行的作业数
 <poolMaxJobsDefault></poolMaxJobsDefault>之间配置默认情况下每个pool最大运行作业数
 <userMaxJobsDefault></userMaxJobsDefault>之间配置默认情况下每个user最大运行作业数
 ……
-【2】 该配置文件中可动态修改无需重启Hadoop（修改后3s会被重新加载）
+
+* 该配置文件中可动态修改无需重启Hadoop（修改后3s会被重新加载）
+
 5.	作业管理
 作业管理模块由Hadoop的ACL（http://hadoop.apache.org/common/docs/r0.20.2/service_level_auth.html ）完成。
 (1)	在core-site.xmll中配置以下属性：
