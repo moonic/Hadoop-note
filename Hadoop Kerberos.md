@@ -36,7 +36,7 @@
     * AS (Authentication Server)： 认证服务器
     * TSG(Ticket Granting Server)： 许可证服务器
 
-* kerberos 工作原理
+* kerberos 工作原理 
   * 4.2.1  Kerberos协议
   * Kerberos可以分为两个部分：
    * Client向KDC发送自己的身份信息，KDC从Ticket Granting Service得到TGT(ticket-granting ticket)， 并用协议开始前Client与KDC之间的密钥将TGT加密回复给Client。此时只有真正的Client才能利用它与KDC之间的密钥将加密后的TGT解密，从而获得TGT。（此过程避免了Client直接向KDC发送密码，以求通过验证的不安全方式）
