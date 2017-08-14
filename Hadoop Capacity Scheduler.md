@@ -16,19 +16,23 @@ Capacity Scheduler支持以下特性：
 @ ulMin：每个用户的可用的最少资源量（所有用户均相同），需用户在配置文件中指定
 @ capacityPercent：计算资源比例，需用户在配置文件中指定
 @ numJobsByUser：每个用户的作业量，用以跟踪每个用户提交的作业量，并进行数量的上限限制。
-该队列中map 或reduce task的属性：
+
+  * 该队列中map 或reduce task的属性：
 @ capacity：实际的计算资源量，这个随着tasktracker中slot数目变化（用户可能在添加或减少机器节点）而动态变化，大小为：capacityPercent*mapClusterCapacity/100
 @ numRunningTasks：正在running的task数目
 @ numSlotsOccupied：正在running的task占用的slot总数，注意，在Capacity Scheduler中，running task与slot不一定是一一对应的，每个task可获取多个slot，这主要是因为该调度支持内存资源调度，某个task可能需要多个slot包含的内存量。
 @ numSlotsOccupiedByUser：每个用户的作业占用slot总数，用以限制用户使用的资源量。
-(2)	job维护的信息
+
+* job维护的信息
 priority：作业优先级，分为五个等级，从大到小依次为：VERY_HIGH，HIGH，NORMAL，LOW，VERY_LOW;
 numMapTasks/ numReduceTasks ：job的map/reduce task总数
 runningMapTasks/ runningMapTasks：job正在运行的map/reduce task数
 finishedMapTasks/finishedReduceTasks：job已完成的map/reduce task数
 ……
-(3)	task维护的信息
+* 	task维护的信息
 task开始运行时间，当前状态等
+
+
 3.2	计算能力调度算法
 当某个tasktracker上出现空闲slot时，调度器依次选择一个queue、（选中的queue中的）job、（选中的job中的）task，并将该slot分配给该task。下面介绍选择queue、job和task所采用的策略：
 （1）	选择queue：将所有queue按照资源使用率（numSlotsOccupied/capacity）由小到大排序，依次进行处理，直到找到一个合适的job。
