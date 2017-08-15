@@ -3,7 +3,7 @@
 * Hadoop 安全问题
 * 用户到服务器的认证问题
 
-* NameNode，,JobTracker上没有用户认证
+* NameNode，,JobTracker上没有用户认证 
   * 用户可以伪装成其他用户入侵到一个HDFS 或者MapReduce集群上。
   * DataNode上没有认证
   * Datanode对读入输出并没有认证。导致如果一些客户端如果知道block的ID，就可以任意的访问DataNode上block的数据
@@ -59,3 +59,4 @@
   * 可靠 Hadoop 本身并没有认证功能和创建用户组功能，使用依靠外围的认证系统
   * 高效 Kerberos使用对称钥匙操作，比SSL的公共密钥快
   * 操作简单 用户可以方便进行操作，不需要很复杂的指令。比如废除一个用户只需要从Kerbores的KDC数据库中删除即可。
+
