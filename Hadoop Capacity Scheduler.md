@@ -1,14 +1,13 @@
 # hadoop Capacity Scheduler
 
 Capacity Scheduler支持以下特性：
-1.	计算能力保证。支持多个队列，某个作业可被提交到某一个队列中。每个队列会配置一定比例的计算资源，且所有提交到队列中的作业共享该队列中的资源。
-2.	灵活性。空闲资源会被分配给那些未达到资源使用上限的队列，当某个未达到资源的队列需要资源时，一旦出现空闲资源资源，便会分配给他们。
-3.  支持优先级。队列支持作业优先级调度（默认是FIFO）
-4. 	多重租赁。综合考虑多种约束防止单个作业、用户或者队列独占队列或者集群中的资源。
-5.	基于资源的调度。 支持资源密集型作业，允许作业使用的资源量高于默认值，进而可容纳不同资源需求的作业。不过，当前仅支持内存资源的调度。
-3.	计算能力调度器算法分析
-
-
+  1.	计算能力保证。支持多个队列，某个作业可被提交到某一个队列中。每个队列会配置一定比例的计算资源，且所有提交到队列中的作业共享该队列中的资源。
+  2.	灵活性。空闲资源会被分配给那些未达到资源使用上限的队列，当某个未达到资源的队列需要资源时，一旦出现空闲资源资源，便会分配给他们。
+  3.  支持优先级。队列支持作业优先级调度（默认是FIFO）
+  4. 	多重租赁。综合考虑多种约束防止单个作业、用户或者队列独占队列或者集群中的资源。
+  5.	基于资源的调度。 支持资源密集型作业，允许作业使用的资源量高于默认值，进而可容纳不同资源需求的作业。不过，当前仅支持内存资源的调度。
+ 
+## 计算能力调度器算法分析
 * 涉及到的变量
   * 在capacity中，存在三种粒度的对象，分别为：queue、job和task，它们均需要维护的一些信息：
     * queue维护的信息
@@ -33,11 +32,16 @@ finishedMapTasks/finishedReduceTasks：job已完成的map/reduce task数
 task开始运行时间，当前状态等
 
 
-3.2	计算能力调度算法
-当某个tasktracker上出现空闲slot时，调度器依次选择一个queue、（选中的queue中的）job、（选中的job中的）task，并将该slot分配给该task。下面介绍选择queue、job和task所采用的策略：
-（1）	选择queue：将所有queue按照资源使用率（numSlotsOccupied/capacity）由小到大排序，依次进行处理，直到找到一个合适的job。
-（2）	选择job：在当前queue中，所有作业按照作业提交时间和作业优先级进行排序（假设开启支持优先级调度功能，默认不支持，需要在配置文件中开启），调度依次考虑每个作业，选择符合两个条件的job：[1] 作业所在的用户未达到资源使用上限 [2] 该TaskTracker所在的节点剩余的内存足够该job的task使用。
-（3）	选择task，同大部分调度器一样，考虑task的locality和资源使用情况。（即：调用JobInProgress中的obtainNewMapTask()/obtainNewReduceTask()方法）
+* 计算能力调度算法
+当某个tasktracker上出现空闲slot时，调度器依次选择一个queue、（选中的queue中的）job、（选中的job中的）task，并将该slot分配给该task。
+
+* 选择queue、job和task所采用的策略：
+  1. 	选择queue：将所有queue按照资源使用率（numSlotsOccupied/capacity）由小到大排序，依次进行处理，直到找到一个合适的job。
+  2.	选择job：在当前queue中，所有作业按照作业提交时间和作业优先级进行排序（假设开启支持优先级调度功能，默认不支持，需要在配置文件中开启），调度依次考虑每个作业，选择符合两个条件的job：[1] 作业所在的用户未达到资源使用上限 [2] 该TaskTracker所在的节点剩余的内存足够该job的task使用。
+  3.	选择task，同大部分调度器一样，考虑task的locality和资源使用情况。
+
+```java
+（即：调用JobInProgress中的obtainNewMapTask()/obtainNewReduceTask()方法）
 综合上述，公平调度器的伪代码为：
 // CapacityTaskScheduler:trackTracker出现空闲slot，为slot寻找合适的task
  
@@ -58,35 +62,39 @@ List<Task> assignTasks(TaskTrackerStatus taskTracker) {
         if(task != null) return task
  
       }
- 
     }
  
   }
  
 }
+```java
 
-
-4.	计算能力调度器源代码分析
+## 计算能力调度器源代码分析
 计算能力调度器位于代码包的hadoop-0.20.2\src\contrib\capacity-scheduler目录下。
-4.1	源代码包组成（共5个java文件）
+
+* 源代码包组成（共5个java文件）
 CapacitySchedulerConf.java：管理配置文件
 CapacityTaskScheduler.java：调度器的核心代码
 JobQueuesManager.java：管理作业队列
 MemoryMatcher.java：用于判断job与内存容量是否匹配
 JobInitializationPoller.java：作业初始化类，用户可同时启动多个线程，加快作业初始化速度。
-4.2	CapacityTaskScheduler分析
+
+* CapacityTaskScheduler分析
 只介绍调度器最核心的代码，即CapacityTaskScheduler.java文件中的代码。
-（1）	几个基本的内类：
-[1]	TaskSchedulingInfo（TSI）：用以维护某种task(MAP或者REDUCE)的调度信息，包括numRunningTasks，numSlotsOccupied等
-[2]	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
-[3]	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
-(2)	核心方法（按照执行顺序分析）：
-[1]	CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
-[2]	CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
+  （1）	几个基本的内类：
+    [1]	TaskSchedulingInfo（TSI）：用以维护某种task(MAP或者REDUCE)的调度信息，包括numRunningTasks，numSlotsOccupied等
+    [2]	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
+    [3]	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
+
+  (2)	核心方法（按照执行顺序分析）：
+    [1]	CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
+    [2]	CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
 前面提到TaskSchedulingMgr是一个抽象类，它实现了所有派生类必须使用的方法：
-[3] TaskSchedulingMgr.assignTasks (taskTracker)：对外提供的最直接的调用函数，主要作用是为taskTracker选择一个合适的task，该函数会依次扫描系统中所有的queue（queue已经被排好序，排序类为TaskSchedulingMgr.QueueComparator），对于每个queue，调用getTaskFromQueue(taskTracker, qsi)。
-[4] TaskSchedulingMgr.getTaskFromQueue(taskTracker, qsi)：从队列qsi中选择一个符合条件的作业，这里的“条件”包括用户的资源量上限，taskTracker空闲内存等。
-5.	计算能力调度器与公平调度器对比
+    [3] TaskSchedulingMgr.assignTasks (taskTracker)：对外提供的最直接的调用函数，主要作用是为taskTracker选择一个合适的task，该函数会依次扫描系统中所有的queue（queue已经被排好序，排序类为TaskSchedulingMgr.QueueComparator），对于每个queue，调用getTaskFromQueue(taskTracker, qsi)。
+    [4] TaskSchedulingMgr.getTaskFromQueue(taskTracker, qsi)：从队列qsi中选择一个符合条件的作业，这里的“条件”包括用户的资源量上限，taskTracker空闲内存等。
+    
+    
+## 	计算能力调度器与公平调度器对比
 （1）	相同点
 @ 均支持多用户多队列，即：适用于多用户共享集群的应用环境
 @ 单个队列均支持优先级和FIFO调度方式
