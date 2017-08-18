@@ -1,7 +1,7 @@
 # hadoop Capacity Scheduler
 
 Capacity Scheduler支持以下特性
-  1.	计算能力保证。支持多个队列，某个作业可被提交到某一个队列中。每个队列会配置一定比例的计算资源，且所有提交到队列中的作业共享该队列中的资源。
+  1.	计算能力保证。支持多个队列某个作业可被提交到某一个队列中。每个队列会配置一定比例的计算资源，所有提交到队列中的作业共享该队列中的资源
   2.	灵活性。空闲资源会被分配给那些未达到资源使用上限的队列，当某个未达到资源的队列需要资源时，一旦出现空闲资源资源，便会分配给他们。
   3.  支持优先级。队列支持作业优先级调度（默认是FIFO）
   4. 	多重租赁。综合考虑多种约束防止单个作业、用户或者队列独占队列或者集群中的资源。
@@ -83,23 +83,24 @@ JobInitializationPoller.java：作业初始化类，用户可同时启动多个�
 * CapacityTaskScheduler分析
 只介绍调度器最核心的代码，即CapacityTaskScheduler.java文件中的代码。
   1.	几个基本的内类：
-    [1]	TaskSchedulingInfo（TSI）：用以维护某种task(MAP或者REDUCE)的调度信息，包括numRunningTasks，numSlotsOccupied等
-    [2]	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
-    [3]	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
+    *	TaskSchedulingInfo（TSI）：用以维护某种task(MAP或者REDUCE)的调度信息，包括numRunningTasks，numSlotsOccupied等
+    *	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
+    *	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
 
   2.	核心方法（按照执行顺序分析）：
-    [1]	CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
-    [2]	CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
+    *		CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
+    *		CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
 前面提到TaskSchedulingMgr是一个抽象类，它实现了所有派生类必须使用的方法：
-    [3] TaskSchedulingMgr.assignTasks (taskTracker)：对外提供的最直接的调用函数，主要作用是为taskTracker选择一个合适的task，该函数会依次扫描系统中所有的queue（queue已经被排好序，排序类为TaskSchedulingMgr.QueueComparator），对于每个queue，调用getTaskFromQueue(taskTracker, qsi)。
-    [4] TaskSchedulingMgr.getTaskFromQueue(taskTracker, qsi)：从队列qsi中选择一个符合条件的作业，这里的“条件”包括用户的资源量上限，taskTracker空闲内存等。
+    *	 TaskSchedulingMgr.assignTasks (taskTracker)：对外提供的最直接的调用函数，主要作用是为taskTracker选择一个合适的task，该函数会依次扫描系统中所有的queue（queue已经被排好序，排序类为TaskSchedulingMgr.QueueComparator），对于每个queue，调用getTaskFromQueue(taskTracker, qsi)。
+    *	 TaskSchedulingMgr.getTaskFromQueue(taskTracker, qsi)：从队列qsi中选择一个符合条件的作业，这里的“条件”包括用户的资源量上限，taskTracker空闲内存等。
     
     
 ## 	计算能力调度器与公平调度器对比
+
 1.	相同点
-@ 均支持多用户多队列，即：适用于多用户共享集群的应用环境
-@ 单个队列均支持优先级和FIFO调度方式
-@ 均支持资源共享，即某个queue中的资源有剩余时，可共享给其他缺资源的queue
+  @ 均支持多用户多队列，即：适用于多用户共享集群的应用环境
+  @ 单个队列均支持优先级和FIFO调度方式
+  @ 均支持资源共享，即某个queue中的资源有剩余时，可共享给其他缺资源的queue
 2. 不同点
-@ 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；而公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
-@ 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot；而公平调度器对这种特殊的job无能为力，只能杀掉这种task。
+  @ 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；而公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
+  @ 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot；而公平调度器对这种特殊的job无能为力，只能杀掉这种task。
