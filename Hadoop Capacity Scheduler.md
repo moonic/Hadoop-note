@@ -65,7 +65,6 @@ List<Task> assignTasks(TaskTrackerStatus taskTracker) {
     }
  
   }
- 
 }
 
 ```
@@ -102,5 +101,7 @@ JobInitializationPoller.java：作业初始化类，用户可同时启动多个�
 @ 单个队列均支持优先级和FIFO调度方式
 @ 均支持资源共享，即某个queue中的资源有剩余时，可共享给其他缺资源的queue
 2. 不同点
-@ 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；而公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
-@ 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot；而公平调度器对这种特殊的job无能为力，只能杀掉这种task。
+@ 核心调度策略不同。 计算能力调度器的调度策略是，先选择资源利用率低的queue，然后在queue中同时考虑FIFO和memory constraint因素；
+公平调度器仅考虑公平，而公平是通过作业缺额体现的，调度器每次选择缺额最大的job（queue的资源量，job优先级等仅用于计算作业缺额）。
+@ 内存约束。计算能力调度器调度job时会考虑作业的内存限制，为了满足某些特殊job的特殊内存需求，可能会为该job分配多个slot
+公平调度器对这种特殊的job无能为力，只能杀掉这种task。
