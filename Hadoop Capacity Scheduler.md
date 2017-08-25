@@ -73,19 +73,18 @@ List<Task> assignTasks(TaskTrackerStatus taskTracker) {
 计算能力调度器位于代码包的hadoop-0.20.2\src\contrib\capacity-scheduler目录下
 
 * 源代码包组成（共5个java文件）
-CapacitySchedulerConf.java：管理配置文件
-CapacityTaskScheduler.java：调度器的核心代码
-JobQueuesManager.java：管理作业队列
-MemoryMatcher.java：用于判断job与内存容量是否匹配
-JobInitializationPoller.java：作业初始化类，用户可同时启动多个线程，加快作业初始化速度。
+  * CapacitySchedulerConf.java：管理配置文件
+  * CapacityTaskScheduler.java：调度器的核心代码
+  * JobQueuesManager.java：管理作业队列
+  * MemoryMatcher.java：用于判断job与内存容量是否匹配
+  * JobInitializationPoller.java：作业初始化类，用户可同时启动多个线程，加快作业初始化速度。
 
 * CapacityTaskScheduler分析
-只介绍调度器最核心的代码，即CapacityTaskScheduler.java文件中的代码。
+  * 只介绍调度器最核心的代码，即CapacityTaskScheduler.java文件中的代码。
   1.	几个基本的内类：
     *	TaskSchedulingInfo（TSI）：用以维护某种task(MAP或者REDUCE)的调度信息，包括numRunningTasks，numSlotsOccupied等
     *	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
     *	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
-
   2.	核心方法（按照执行顺序分析）：
     *		CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
     *		CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
