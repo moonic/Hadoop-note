@@ -1,4 +1,6 @@
-## Spark Runtime
+# Spark Runtime
+
+* Spark file 
 	* Spark 分布式计算框架
 	* Local  单机模式 本地开启一些线程来完成任务
 	* Standalone model 运行在专门的管理器上面
@@ -6,15 +8,13 @@
 	* Mesoes mode
 
 * Spark 基本概念
-	* Applcation 基于spark用户应用程序包 	包含了
-	* driver program 集群中多个executor
+	* Applcation 基于spark用户应用程序包 	包含了driver program 集群中多个executor
 	* Driver Program 运行Applcation main函数并创建
 		SparkContext 
 	* Executor 为应用程序运行在worker node上的进程上
-	* 	进程复制运行Task 并负责数据存在内存或者磁盘上
+	* 进程复制运行Task 并负责数据存在内存或者磁盘上
 	* Custer Manager 集群上获取资源的外部服务
-	* Worker Node 集群中运行Applcation代码的节点
-		提供这样的资源管理功能 提供计算框架
+	* Worker Node 集群中运行Applcation代码的节点提供这样的资源管理功能 提供计算框架
 	* Task 送到executor上执行的单元
 	* job 拆分成Tasj并执行计算的单元 soark Actaion
 	* Stage job被拆臣Task 每组称为
@@ -35,16 +35,11 @@
 		* 通过其他的RDD变换
 
 * Transformations
-	* mapPartitions Similar to map but runs separately on 
-	  each partition block of the  RDD so  func must be of 
-	  type Iterator when running on an Rdd of type 
+	* mapPartitions Similar to map but runs separately on  each partition block of the  RDD so  func must be of type Iterator when running on an Rdd of type 
 
-	 * mapPartitionsWithIndex Similar to  mapPartitions
-	 	but  also provides func with an integer value
-	 	representing the index of the partition
+	 * mapPartitionsWithIndex Similar to  mapPartitions but  also provides func with an integer value representing the index of the partition
 
-	 * sample sample a fraction fraction of the data with or without 
-	 	replcaiton using a give random number generator seed 
+	 * sample sample a fraction fraction of the data with or without  replcaiton using a give random number generator seed 
 
 * 宽依赖与窄依赖
 	* 字RDD每个风趣雨来所用RDD 分区对RDD基于
@@ -56,9 +51,7 @@
 	 * 所有的RDD进行依赖
 
 	*  Transformations 
-	 	groupBykey when called on a  database of pairs returns a 
-	 		databaset of pairs Note IF toy  are grouping
-	 		 in order to perform an aggregation Observer each key
+		* groupBykey when called on a  database of pairs returns a databaset of pairs Note IF toy  are grouping in order to perform an aggregation Observer each key
 
 	*  Actions 
 	 	reduce() Aggregate the elements of the database using 
@@ -99,7 +92,6 @@
 	   	向RM申请资源启动execut运行Task
 * 运行模式下设置的模式变量
 	exprort SPARK_YARN_USER_ENV =
-
 	spark.yarn.ApplcationMaster 10 RM 等待spark APPMaster 启动次数
 	spark.yarn.submit.file.replcation 3 HDFS 文件复制因子
 	perserve.staging.files false  true job 结束将stage 相关文件保留
@@ -107,14 +99,14 @@
 	工作目录 yatn 中的 NodeManager
 
 * Spark SQL 类数据仓库模式
-	Integrated 
-	  seemlessly mix SQL queries with spark programs 
+	* Integrated 
+	  * seemlessly mix SQL queries with spark programs 
 	  	Unified Data Access 
 	  		Load and query data from a varitety of sources 
-	 Hive Compatibilirt 
-	 	Run ummodified Hive Queries on existing warehouses 
-	 Standard Connectivity 
-	 	Connect through JDBC or ODBC
+	 * Hive Compatibilirt 
+	 		* Run ummodified Hive Queries on existing warehouses 
+	 * Standard Connectivity 
+	 		* Connect through JDBC or ODBC
 
 * RDD Schema 
 	spark + RDDs 对可区分模糊集合功能的装换
