@@ -30,16 +30,21 @@
 		* 数据存在的内存中 提供了低延迟的特性
 
 * RDD产生
-		* 并行化Scaka集合
-		* 通过外部数据源获得 hdfs hbase
-		* 通过其他的RDD变换
+	* 并行化Scaka集合
+	* 通过外部数据源获得 hdfs hbase
+	* 通过其他的RDD变换
 
 * Transformations
-	* mapPartitions Similar to map but runs separately on  each partition block of the  RDD so  func must be of type Iterator when running on an Rdd of type 
+	* mapPartitions Similar to map but runs separately on  
+	each partition block of the  RDD so  func must be of 
+	type Iterator when running on an Rdd of type 
 
-	 * mapPartitionsWithIndex Similar to  mapPartitions but  also provides func with an integer value representing the index of the partition
+	 * mapPartitionsWithIndex Similar to  mapPartitions but  
+	 also provides func with an integer value representing the 
+	 index of the partition
 
-	 * sample sample a fraction fraction of the data with or without  replcaiton using a give random number generator seed 
+	 * sample sample a fraction fraction of the data with or without  
+	 replcaiton using a give random number generator seed 
 
 * 宽依赖与窄依赖
 	* 字RDD每个风趣雨来所用RDD 分区对RDD基于
@@ -62,28 +67,29 @@
 	 			a filter of other operation that returns 
 	 	count()  foreach() takesample()
 	
-	RDD 缓存
-		spark 使用 persist cache 将任意RDD缓存到内存 磁盘文件系统
-		 缓存是容错的一个RDD分片丢失 可以通过构建 transformation
-		 被缓存RDD被使用的时候 存取速度会被大大加速 60做cache其余的task
-	#内存对象管理 自学
-		rdd.persist() rdd.cache() rdd.unpersist()
+* RDD 缓存
+	* spark 使用 persist cache 将任意RDD缓存到内存 磁盘文件系统
+	* 缓存是容错的一个RDD分片丢失 可以通过构建 transformation
+	* 被缓存RDD被使用的时候 存取速度会被大大加速 60做cache其余的task
+
+* 内存对象管理 自学
+	* rdd.persist() rdd.cache() rdd.unpersist()
 
 * RDD 共享变量 广播变量 和累加器
-		广播变量
-			缓存到各个节点的内存中 而不是每个Task
-			被创建 能在集群运行 所有的函数调用
-			只读的不能再 被广播后修改
+	* 缓存到各个节点的内存中 而不是每个Task
+	* 被创建 能在集群运行 所有的函数调用
+	* 只读的不能再 被广播后修改
 
-		累加器
-			只支持加法操作可以高效的并行 使用计算和变脸的求和
-			 支持数据类型的标准可以使用集合的计数器 用户可以添加新的类型
-			  只用驱动程序才能故去累积器的值
+* 累加器
+	* 只支持加法操作可以高效的并行 使用计算和变脸的求和
+	* 支持数据类型的标准可以使用集合的计数器 用户可以添加新的类型
+	* 只用驱动程序才能故去累积器的值
+
 * RDD 模型优势
-		低不变 好粗颗粒模型 一致性 性能
-		低错误 容灾错
-		数据本地化 RDD分区任务调度
-		尽管受到 Transformations Actions Model 的限制RDD 并行Mapred
+	* 低不变 好粗颗粒模型 一致性 性能
+	* 低错误 容灾错
+	* 数据本地化 RDD分区任务调度
+	* 尽管受到 Transformations Actions Model 的限制RDD 并行Mapred
 
 * spark on YARN
 	YARN环境运行 按照spark应用程序中driver 分布式不同
