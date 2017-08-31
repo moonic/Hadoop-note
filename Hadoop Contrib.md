@@ -36,6 +36,6 @@
   * 可以用MapDriver单独测试Mapperr，用ReduceDriver单独测试Reducer，用MapReduceDriver测试MapReduce作业。
 具体可参考：http://www.taobaotest.com/blogs/qa?bid=10550
 
-* Mumak（Hadoop 0.21.0）
+* Mumak（Hadoop 0.21.0） 
   * MapReduce模拟器，它可用少量节点模拟一个真实的线上生产环境（包括节点规模、拓扑结构等），它通过分析JobHistory日志还原作业的运行过程。该模拟器由Simulated JobTracker、Simulated Cluster (set of tasktrackers)、Client for handling job-submission等基础组件组成，它允许用户使用已存在的真实调度器，比如FIFO、FairScheduler、Capacity Scheduler等。
 https://issues.apache.org/jira/browse/MAPREDUCE-728
