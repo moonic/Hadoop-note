@@ -283,5 +283,4 @@ $HADOOP_HOME/bin/hadoop  jar $HADOOP_HOME/contrib/streaming/hadoop-*-streaming.j
 -reducer Reducerr.py\
 -file Mapper.py \
 -file Reducer.py
-
   2. 用脚本编写时，第一行需注明脚本解释器，默认是shell   （3）如何对Hadoop Streaming程序进行测试？   Hadoop Streaming程序的一个优点是易于测试，比如在Wordcount例子中，可以运行以下命令在本地进行测试：
