@@ -1,20 +1,24 @@
 # small paper
+> 小文件是指文件size小于HDFS上block大小的文件。这样的文件会给hadoop的扩展性和性能带来严重问题
 
-小文件是指文件size小于HDFS上block大小的文件。这样的文件会给hadoop的扩展性和性能带来严重问题。首先，在HDFS中，任何block，文件或者目录在内存中均以对象的形式存储，每个对象约占150byte，如果有1000 0000个小文件，每个文件占用一个block，则namenode大约需要2G空间。如果存储1亿个文件，则namenode需要20G空间（见参考资料[1][4][5]）。这样namenode内存容量严重制约了集群的扩展。 其次，访问大量小文件速度远远小于访问几个大文件。HDFS最初是为流式访问大文件开发的，如果访问大量小文件，需要不断的从一个datanode跳到另一个datanode，严重影响性能。最后，处理大量小文件速度远远小于处理同等大小的大文件的速度。每一个小文件要占用一个slot，而task启动将耗费大量时间甚至大部分时间都耗费在启动task和释放task上。
-本文首先介绍了hadoop自带的解决小文件问题的方案（以工具的形式提供），包括Hadoop Archive，Sequence file和CombineFileInputFormat；然后介绍了两篇从系统层面解决HDFS小文件的论文，一篇是中科院计算所2009年发表的，用以解决HDFS上存储地理信息小文件的方案；另一篇是IBM于2009年发表的，用以解决HDFS上存储ppt小文件的方案。
-2、  HDFS文件读写流程
+* 在HDFS中，任何block，文件或者目录在内存中均以对象的形式存储，每个对象约占150byte，如果有1000 0000个小文件，每个文件占用一个block，则namenode大约需要2G空间。如果存储1亿个文件，则namenode需要20G空间
+* namenode内存容量严重制约了集群的扩展。 其次，访问大量小文件速度远远小于访问几个大文件。HDFS最初是为流式访问大文件开发的，如果访问大量小文件，需要不断的从一个datanode跳到另一个datanode，严重影响性能。
+* 处理大量小文件速度远远小于处理同等大小的大文件的速度。每一个小文件要占用一个slot，而task启动将耗费大量时间甚至大部分时间都耗费在启动task和释放task上。
+
+##   HDFS文件读写流程
 在正式介绍HDFS小文件存储方案之前，我们先介绍一下当前HDFS上文件存取的基本流程。
-(1)  读文件流程
+*  读文件流程
 1）client端发送读文件请求给namenode，如果文件不存在，返回错误信息，否则，将该文件对应的block及其所在datanode位置发送给client
 2） client收到文件位置信息后，与不同datanode建立socket连接并行获取数据。
-(2) 写文件流程
+* 写文件流程
 1） client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用datanode节点
 2） client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanode
 3）  namenode收到的client信息后，发送确信信息给datanode
 4）  datanode同时收到namenode和datanode的确认信息后，提交写操作。
-3、  Hadoop自带的解决方案
-对于小文件问题，Hadoop本身也提供了几个解决方案，分别为：Hadoop Archive，Sequence file和CombineFileInputFormat。
-（1） Hadoop Archive
+
+## Hadoop自带的解决方案
+> 对于小文件问题，Hadoop本身也提供了几个解决方案，分别为：Hadoop Archive，Sequence file和CombineFileInputFormat。
+* Hadoop Archive
 Hadoop Archive或者HAR，是一个高效地将小文件放入HDFS块中的文件存档工具，它能够将多个小文件打包成一个HAR文件，这样在减少namenode内存使用的同时，仍然允许对文件进行透明的访问。
 对某个目录/foo/bar下的所有小文件存档成/outputdir/ zoo.har：
 hadoop archive -archiveName zoo.har -p /foo/bar /outputdir
