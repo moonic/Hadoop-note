@@ -69,8 +69,8 @@ import sys
 for line in sys.stdin:
 .......
 为了说明各种语言编写Hadoop Streaming程序的方法，下面以WordCount为例，WordCount作业的主要功能是对用户输入的数据中所有字符串进行计数。
-（1）C语言实现
-
+1. C语言实现
+```c
 //mapper
 #include <stdio.h>
 #include <string.h>
@@ -139,7 +139,10 @@ int main(int argc, char *argv[]){
  printf("%s\t%d\n", strLastKey, count); /* flush the count */
  return 0;
 }
-（2）C++语言实现
+
+```
+2. C++语言实现
+```c++
 //mapper
 #include <stdio.h>
 #include <string>
@@ -154,7 +157,6 @@ int main(){
         }
         return 0;
 }
-//------------------------------------------------------------------------------------------------------------
 //reducer
 #include <string>
 #include <map>
@@ -176,12 +178,14 @@ int main(){
                         word2count.insert(make_pair(key, 1));
                 }
         }
- 
         for(it = word2count.begin(); it != word2count.end(); ++it){
                 cout<<it->first<<"\t"<<it->second<<endl;
         }
         return 0;
 }
+
+```
+
 （3）shell脚本语言实现
 简约版，每行一个单词：
 $HADOOP_HOME/bin/hadoop  jar $HADOOP_HOME/hadoop-streaming.jar \
@@ -190,6 +194,7 @@ $HADOOP_HOME/bin/hadoop  jar $HADOOP_HOME/hadoop-streaming.jar \
     -mapper cat \
    -reducer  wc
 详细版，每行可有多个单词（由史江明编写）： mapper.sh
+```shell 
 #! /bin/bash
 while read LINE; do
   for word in $LINE
@@ -219,10 +224,10 @@ echo "$word\t$count"
  
 import sys
  
-# maps words to their counts
+## maps words to their counts
 word2count = {}
  
-# input comes from STDIN (standard input)
+### input comes from STDIN (standard input)
 for line in sys.stdin:
     # remove leading and trailing whitespace
     line = line.strip()
@@ -242,10 +247,10 @@ for line in sys.stdin:
 from operator import itemgetter
 import sys
  
-# maps words to their counts
+### maps words to their counts
 word2count = {}
  
-# input comes from STDIN
+* input comes from STDIN
 for line in sys.stdin:
     # remove leading and trailing whitespace
     line = line.strip()
@@ -261,16 +266,16 @@ for line in sys.stdin:
         # ignore/discard this line
         pass
  
-# sort the words lexigraphically;
-#
-# this step is NOT required, we just do it so that our
-# final output will look more like the official Hadoop
-# word count examples
+* sort the words lexigraphically;
+ this step is NOT required, we just do it so that our
+ final output will look more like the official Hadoop
+ word count examples
 sorted_word2count = sorted(word2count.items(), key=itemgetter(0))
  
-# write the results to STDOUT (standard output)
+*  write the results to STDOUT (standard output)
 for word, count in sorted_word2count:
     print '%s\t%s'% (word, count)
+```
 
 * 常见问题及解决方案
   1. 作业总是运行失败，
