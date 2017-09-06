@@ -1,8 +1,8 @@
 # ClusterManager功能
 
 * Corona中 ClusterManager负责整个集群的资源管理包括
-  1. 维护各个节点的资源使用情况，
-  2. 将各个节点中的资源按照一定的约束分配（比如每个pool使用的资源不能超过其上线，任务分配时应考虑负载均衡等）给各个应用程序 ClusterManager是一个纯粹的资源管理器，它不再（向MRv1中的JobTracker那样）负责作业监控相关工作，如监控各个任务的运行状态，任务失败时重新启动等CoronaJobTracker完成。
+  1. 维护各个节点的资源使用情况
+  2. 将各个节点中的资源按照一定的约束分配（比如每个pool使用的资源不能超过其上线，任务分配时应考虑负载均衡等）给各个应用程序 ClusterManager是一个纯粹的资源管理器，它不再（向MRv1中的JobTracker那样）负责作业监控相关工作，如监控各个任务的运行状态，任务失败时重新启动等CoronaJobTracker完成
 
 
 * ClusterManager实现方法
@@ -11,14 +11,16 @@
 ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift RPC实现的，具体涉及到的RPC协议，为了提高效率ClusterManager采用了非阻塞异步编程模型
 
 *  ClusterManager架构
-  * ClusterManager架构图如下所示：
-
+  * ClusterManager架构图如下所示
+  
 1. NodeManager
 负责管理各个节点上的资源使用情况，当前主要考虑内存、磁盘和CPU三种资源。CoronaTaskTracker通过thrift RPC汇报资源使用信息后，ClusterManager将交由NodeManager管理
 
 2. SchedulerForType
-资源分配线程，每种资源（Corona中有三类资源：MAP、REDUCE和JOBTRACKER，分别用于启动Map Task、Reduce Task和CoronaJobTracker）一个。当出现空闲资源时，它从当前系统中选择出最合适的作业，并将资源分配它。
-前面提到，Corona已将Fair Scheduler深度集成到了ClusterManager中，相比于MRv1中的Fair Scheduler，它增加了group的概念，即不再只有平级pool的概念，而是引入了更高一层的pool组织方式—group，管理员可将整个集群资源划分成若干个group，并可进一步将一个group划分成若干个pool，一个配置实例corona.xml如下：
+  * 资源分配线程，每种资源（Corona中有三类资源：
+    * MAP、REDUCE和JOBTRACKER，分别用于启动Map Task、Reduce Task和CoronaJobTracker）一个
+    * 当出现空闲资源时，它从当前系统中选择出最合适的作业，并将资源分配它。
+  * Corona已将Fair Scheduler深度集成到了ClusterManager中，相比于MRv1中的Fair Scheduler，它增加了group的概念，即不再只有平级pool的概念，而是引入了更高一层的pool组织方式—group，管理员可将整个集群资源划分成若干个group，并可进一步将一个group划分成若干个pool，一个配置实例corona.xml如下：
 
 ```XML
 <?xml version=”1.0″?>
