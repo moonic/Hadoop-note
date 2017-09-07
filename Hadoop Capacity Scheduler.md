@@ -6,7 +6,7 @@ Capacity Scheduler支持以下特性
   3.  支持优先级: 队列支持作业优先级调度（默认是FIFO）
   4. 	多重租赁: 综合考虑多种约束防止单个作业、用户或者队列独占队列或者集群中的资源。
   5.	基于资源的调度 支持资源密集型作业，允许作业使用的资源量高于默认值，进而可容纳不同资源需求的作业仅支持内存资源的调度。
- 
+  
 ## 计算能力调度器算法分析
 * 涉及到的变量 
   * 在capacity中，存在三种粒度的对象，分别为：queue、job和task，它们均需要维护的一些信息：
@@ -86,15 +86,13 @@ List<Task> assignTasks(TaskTrackerStatus taskTracker) {
     *	QueueSchedulingInfo（QSI）：用以跟踪某个queue中的调度信息，包括capacityPercent，ulMin等
     *	TaskSchedulingMgr：调度的核心实现算法，这是一个抽象类，有两个派生类，分别为：MapSchedulingMgr和ReduceSchedulingMgr，用以实现map task和reduce task的调度策略
   2.	核心方法（按照执行顺序分析）：
-    *		CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量等。
-    *		CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调用TaskSchedulingMgr中的方法。
-前面提到TaskSchedulingMgr是一个抽象类，它实现了所有派生类必须使用的方法：
+    *	CapacityTaskScheduler.start()： 调度器初始化，包括加载配置文件，初始化各种对象和变量
+    *	CapacityTaskScheduler. assignTasks ()：当有一个TaskTracker的HeartBeat到达JobTracker时，如果有空闲的slot，JobTracker会调用Capacity Scheduler中的assignTasks方法，该方法会为该TaskTracker需找若干个合适的task。在assignTasks方法中，会调TaskSchedulingMgr中的方法。
+    * 提到TaskSchedulingMgr是一个抽象类，它实现了所有派生类必须使用的方法
     *	 TaskSchedulingMgr.assignTasks (taskTracker)：对外提供的最直接的调用函数，主要作用是为taskTracker选择一个合适的task，该函数会依次扫描系统中所有的queue（queue已经被排好序，排序类为TaskSchedulingMgr.QueueComparator），对于每个queue，调用getTaskFromQueue(taskTracker, qsi)。
     *	 TaskSchedulingMgr.getTaskFromQueue(taskTracker, qsi)：从队列qsi中选择一个符合条件的作业，这里的“条件”包括用户的资源量上限，taskTracker空闲内存等。
     
-    
 ## 	计算能力调度器与公平调度器对比
-
 1.	相同点
 @ 均支持多用户多队列，即：适用于多用户共享集群的应用环境
 @ 单个队列均支持优先级和FIFO调度方式
