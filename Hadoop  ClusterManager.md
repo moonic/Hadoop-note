@@ -14,7 +14,8 @@ ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift R
   * ClusterManager架构图如下所示
   
 1. NodeManager
-负责管理各个节点上的资源使用情况，当前主要考虑内存、磁盘和CPU三种资源。CoronaTaskTracker通过thrift RPC汇报资源使用信息后，ClusterManager将交由NodeManager管理
+  * 负责管理各个节点上的资源使用情况，当前主要考虑内存、磁盘和CPU三种资源
+  * CoronaTaskTracker通过thrift RPC汇报资源使用信息后，ClusterManager将交由NodeManager管理
 
 2. SchedulerForType
   * 资源分配线程，每种资源（Corona中有三类资源：
