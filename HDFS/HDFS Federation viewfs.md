@@ -1,16 +1,18 @@
 # HDFS Federation viewfs
 
-1. HDFS Federation产生背景
-在Hadoop 1.0中，HDFS的单NameNode设计带来诸多问题，包括单点故障、内存受限制约集群扩展性和缺乏隔离机制（不同业务使用同一个NameNode导致业务相互影响）等，为了解决这些问题，Hadoop 2.0引入了基于共享存储的HA解决方案和HDFS Federation，本文重点介绍HDFS Federation。
+## HDFS Federation产生背景
+* 在Hadoop 1.0中，HDFS的单NameNode设计带来诸多问题，包括单点故障、内存受限制约集群扩展性和缺乏隔离机制（不同业务使用同一个NameNode导致业务相互影响）等，为了解决这些问题，Hadoop 2.0引入了基于共享存储的HA解决方案和HDFS Federation，本文重点介绍HDFS Federation。
 HDFS Federation是指HDFS集群可同时存在多个NameNode，这些NameNode分别管理一部分数据，且共享所有DataNode的存储资源。这种设计可解决单NameNode存在的以下几个问题：
-（1）HDFS集群扩展性。多个NameNode分管一部分目录，使得一个集群可以扩展到更多节点，不再像1.0中那样由于内存的限制制约文件存储数目。
-（2）性能更高效。多个NameNode管理不同的数据，且同时对外提供服务，将为用户提供更高的读写吞吐率。
-（3）良好的隔离性。用户可根据需要将不同业务数据交由不同NameNode管理，这样不同业务之间影响很小。
+  1. HDFS集群扩展性。多个NameNode分管一部分目录，使得一个集群可以扩展到更多节点，不再像1.0中那样由于内存的限制制约文件存储数目。
+  2. 性能更高效。多个NameNode管理不同的数据，且同时对外提供服务，将为用户提供更高的读写吞吐率。
+  3. 良好的隔离性。用户可根据需要将不同业务数据交由不同NameNode管理，这样不同业务之间影响很小。
 需要注意的，HDFS Federation并不能解决单点故障问题，也就是说，每个NameNode都存在在单点故障问题，你需要为每个namenode部署一个backup namenode以应对NameNode挂掉对业务产生的影响。
-2. HDFS Federation架构
-HDFS Federation的架构我已经在文章“HDFS 设计动机与基本原理”一文中进行了介绍，有兴趣的读者可阅读该文章。
-3. HDFS Federation配置介绍
-本节不会介绍具体的namenode和datanode的配置方法（如果想了解配置方法，可参考文章：“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（1）”和“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（2）”），而是重点介绍HDFS客户端配置方法，并通过对客户端配置的讲解让大家深入理解HDFS Federation引入的“client-side mount table”（viewfs）这一概念，这是通过新的文件系统viewfs实现的。
+
+## HDFS Federation架构
+  * HDFS Federation的架构我已经在文章“HDFS 设计动机与基本原理”一文中进行了介绍，有兴趣的读者可阅读该文章。
+
+## HDFS Federation配置介绍
+  * 本节不会介绍具体的namenode和datanode的配置方法（如果想了解配置方法，可参考文章：“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（1）”和“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（2）”），而是重点介绍HDFS客户端配置方法，并通过对客户端配置的讲解让大家深入理解HDFS Federation引入的“client-side mount table”（viewfs）这一概念，这是通过新的文件系统viewfs实现的。
 （1） Hadoop 1.0中的配置
 在Hadoop 1.0中，只存在一个NameNode，所以，客户端设置NameNode的方式很简单，只需在core-site.xml中进行以下配置：
 <property>
