@@ -3,7 +3,7 @@
 * Corona中 ClusterManager负责整个集群的资源管理包括
   1. 维护各个节点的资源使用情况
   2. 将各个节点中的资源按照一定的约束分配（比如每个pool使用的资源不能超过其上线，任务分配时应考虑负载均衡等）给各个应用程序 ClusterManager是一个纯粹的资源管理器，它不再（向MRv1中的JobTracker那样）负责作业监控相关工作，如监控各个任务的运行状态，任务失败时重新启动等CoronaJobTracker完成
-
+ 
 
 * ClusterManager实现方法
   * ClusterManager实际上由两部分组成：节点资源管理器和资源分配模型 节点资源管理器维护各个节点的资源变化，而资源分配模型由（经修改的）MRv1中的Fair Scheduler实现
