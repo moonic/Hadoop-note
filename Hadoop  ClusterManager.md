@@ -20,7 +20,7 @@ ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift R
 2. SchedulerForType
   * 资源分配线程，每种资源（Corona中有三类资源：
     * MAP、REDUCE和JOBTRACKER，分别用于启动Map Task、Reduce Task和CoronaJobTracker）一个
-    * 当出现空闲资源时，它从当前系统中选择出最合适的作业，并将资源分配它。
+    * 当出现空闲资源时，它从当前系统中选择出最合适的作业，并将资源分配它 
   * Corona已将Fair Scheduler深度集成到了ClusterManager中，相比于MRv1中的Fair Scheduler，它增加了group的概念，即不再只有平级pool的概念，而是引入了更高一层的pool组织方式—group，管理员可将整个集群资源划分成若干个group，并可进一步将一个group划分成若干个pool，一个配置实例corona.xml如下：
 
 ```XML
