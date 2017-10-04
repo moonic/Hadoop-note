@@ -13,7 +13,8 @@ HDFS Federation是指HDFS集群可同时存在多个NameNode，这些NameNode分
 
 ## HDFS Federation配置介绍
   * 本节不会介绍具体的namenode和datanode的配置方法（如果想了解配置方法，可参考文章：“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（1）”和“Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（2）”），而是重点介绍HDFS客户端配置方法，并通过对客户端配置的讲解让大家深入理解HDFS Federation引入的“client-side mount table”（viewfs）这一概念，这是通过新的文件系统viewfs实现的。
-（1） Hadoop 1.0中的配置
+
+1. Hadoop 1.0中的配置
 在Hadoop 1.0中，只存在一个NameNode，所以，客户端设置NameNode的方式很简单，只需在core-site.xml中进行以下配置：
 <property>
     <name>fs.default.name</name>
@@ -24,7 +25,8 @@ bin/hadoop fs –ls /home/dongxicheng/data
 其中“/home/dongxicheng/data”将被自动替换为“hdfs://host0001:9000/home/dongxicheng/data”
 当然，你也可以不在core-site.xml文件中配置fs.default.name参数，这样当你读写一个文件或目录时，需要使用全URI地址，即在前面添加“hdfs://host0001:9000”，比如：
 bin/hadoop fs –ls hdfs://host0001:9000/home/dongxicheng/data
-（2）Hadoop 2.0中的配置
+
+2. Hadoop 2.0中的配置
 在Hadoop 2.0中，由于引入了HDFS Federation，当你启用该功能时，会同时存在多个可用的namenode，为了便于配置“fs.default.name”，你可以规划这些namenode的使用方式，比如图片组使用namenode1，爬虫组使用namenode2等等，这样，爬虫组员工使用的HDFS client端的core-site.xml文件可进行如下配置：
 
 <property>
@@ -41,6 +43,7 @@ bin/hadoop fs –ls hdfs://host0001:9000/home/dongxicheng/data
 distcp hdfs://nnClusterY:port/pathSrc hdfs://nnCLusterZ:port/pathDest
 为了解决这种麻烦，为用户提供统一的全局HDFS访问入口，HDFS Federation借鉴Linux提供了client-side mount table，这是通过一层新的文件系统viewfs实现的，它实际上提供了一种映射关系，将一个全局（逻辑）目录映射到某个具体的namenode（物理）目录上，采用这种方式后，core-site.xml配置如下：
 
+```xml
 <configuration xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="mountTable.xml"/>
     <property>
@@ -48,9 +51,12 @@ distcp hdfs://nnClusterY:port/pathSrc hdfs://nnCLusterZ:port/pathDest
       <value>viewfs://ClusterName/</value>
     </property>
 </configuration>
-其中，“ClusterName”是HDFS整个集群的名称，你可以自己定义一个。mountTable.xml配置了全局（逻辑）目录与具体namenode（物理）目录的映射关系，你可以类比linux挂载点来理解。
-假设你的集群中有三个namenode，分别是namenode1，namenode2和namenode3，其中，namenode1管理/usr和/tmp两个目录，namenode2管理/projects/foo目录，namenode3管理/projects/bar目录，则可以创建一个名为“cmt”的client-side mount table，并在mountTable.xml中进行如下配置：
+```
 
+* 其中，“ClusterName”是HDFS整个集群的名称
+  * 可以自己定义一个。mountTable.xml配置了全局（逻辑）目录与具体namenode（物理）目录的映射关系，你可以类比linux挂载点来理解。
+假设你的集群中有三个namenode，分别是namenode1，namenode2和namenode3，其中，namenode1管理/usr和/tmp两个目录，namenode2管理/projects/foo目录，namenode3管理/projects/bar目录，则可以创建一个名为“cmt”的client-side mount table，并在mountTable.xml中进行如下配置：
+```xml
 <configuration>
   <property>
     <name>fs.viewfs.mounttable.cmt.link./user</name>
@@ -69,6 +75,8 @@ distcp hdfs://nnClusterY:port/pathSrc hdfs://nnCLusterZ:port/pathDest
     <value> hdfs://namenode3:9000/projects/bar</value>
   </property>
 </configuration>
+```
+
 经过以上配置后，你可以像1.0那样，访问HDFS上的文件，比如：
 bin/hadoop fs –ls /usr/dongxicheng/data
 中的“/usr/dongxicheng/data”将被映射成“hdfs://namenode1:9000/user/dongxicheng/data”。
