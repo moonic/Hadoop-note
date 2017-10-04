@@ -71,8 +71,7 @@
 		* 输入分片 足够小的实现数并行
 		* 不能太小 开销用去大部分时间
 		* 切分输入数据的原则别和HDFS的设计方案
-	* 用Java.IO.DatInput Stream FSDataInputStream
-	扩展支持随机读取
+	* 用Java.IO.DatInput Stream FSDataInputStream 扩展支持随机读取
 	* 看到Mapreduce 为HDFS存取做的设计
 
 > 输入分片是逻辑的划分 HDFS数据块是对物理的分割
