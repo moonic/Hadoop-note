@@ -95,6 +95,4 @@ SELECT A.* FROM A LEFT SEMI JOIN B ON(A.KEY = B.KEY AND B.KEY > 100);
 set hive.optimize.bucketmapjoin = true;
 和Map join一起工作；
 所有join的表都做列分桶，同时大表桶的数量是小表桶的整数倍；
-做bucket的列必须是join的列；
-
-SELECT /*+
+做bucket的列必须是join的列
