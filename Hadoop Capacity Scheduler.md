@@ -7,7 +7,7 @@ Capacity Scheduler支持以下特性
   4. 	多重租赁: 综合考虑多种约束防止单个作业、用户或者队列独占队列或者集群中的资源。
   5.	基于资源的调度 支持资源密集型作业，允许作业使用的资源量高于默认值，进而可容纳不同资源需求的作业仅支持内存资源的调度。
   
-## 计算能力调度器算法分析
+## 计算能力调度器算法分析 
 * 涉及到的变量 
   * 在capacity中，存在三种粒度的对象，分别为：queue、job和task，它们均需要维护的一些信息：
     * queue维护的信息
@@ -30,7 +30,6 @@ finishedMapTasks/finishedReduceTasks：job已完成的map/reduce task数
 ……
 * 	task维护的信息
 task开始运行时间，当前状态等
-
 
 * 计算能力调度算法
 当某个tasktracker上出现空闲slot时，调度器依次选择一个queue、（选中的queue中的）job、（选中的job中的）task，并将该slot分配给该task。
