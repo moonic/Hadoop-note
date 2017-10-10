@@ -1,3 +1,5 @@
+# MRv2的Client端代码分析
+
 YARN/MRv2是一个资源统一管理系统，它上面可以运行各种计算框架，而所有计算框架的client端编写方法类似，本文拟以MapReduce计算框架的client端代码为例进行说明。
 2.  两个相关协议
 需要通过两个协议提交作业：
@@ -9,23 +11,17 @@ ClientRMProtocol：Yarn中的client通过该协议向ResourceManager提交作业
 设计新类YARNRunner，实现ClientProtocol接口，并将ClientRMProtocol对象作为内部成员。当用户提交作业时，会直接调用YARNRunner中的submitJob函数，在该函数内部，会接调用ClientRMProtocol的submitApplication函数，将作业提交到ResourceManager中。此处的submitApplication函数实际上是一个RPC函数，由ResourceManager实现。
 
 我们看一下ClientRMProtocol接口中的所有方法：
-1
-2
-3
+
 public SubmitApplicationResponse submitApplication(
  
   SubmitApplicationRequest request) throws YarnRemoteException;
 向ResourceManager提交新的application，client调用该函数时，需要在参数request中指定application所在队列，ApplicationMaster相关jar包及启动方法等信息。
-1
-2
-3
+
 public KillApplicationResponse forceKillApplication(
  
   KillApplicationRequest request) throws YarnRemoteException;
 client要求ResourceManager杀死某个application。
-1
-2
-3
+
 public GetApplicationReportResponse getApplicationReport(
  
   GetApplicationReportRequest request) throws YarnRemoteException;
@@ -37,27 +33,6 @@ Client首先通过ClientRMProtocal#getNewApplication获取一个新的“Applica
 
 具体细节：
 （1） Client向Resource Manager发动一个连接，更具体 一些，实际上是向ResourceManager的ApplicationsManager发动一个连接。
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
 YarnRPC rpc = YarnRPC.create(this.conf);
  
 InetSocketAddress rmAddress =
@@ -80,13 +55,6 @@ applicationsManager =
  
     rmAddress, this.conf);
 （2） 一旦获取一个连接到ASM的handler，client要求ResourceManager分配一个新的ApplicationId。
-1
-2
-3
-4
-5
-6
-7
 SubmitApplicationRequest request = recordFactory.newRecordInstance(SubmitApplicationRequest.class);
  
 request.setApplicationSubmissionContext(appContext);
@@ -99,159 +67,7 @@ Client最重要的任务是设置对象ApplicationSubmissionContext，它定义�
 [1] 队列，优先级信息：该application将要提交到哪个队列，以及它的优先级是多少。
 [2] 用户：哪个用户提交的application，这主要用于权限管理。
 [3] ContainerLaunchContext：启动并运行ApplicationMaster的那个container的相关信息，包括：本地资源（binaries，jars，files等），安全令牌（security tokens），环境变量设置（CLASSPATH等）和运行命令。
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97
-98
-99
-100
-101
-102
-103
-104
-105
-106
-107
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140
-141
-142
-143
-144
-145
-146
-147
-148
-149
-150
-151
-152
-153
+
 // Create a new ApplicationSubmissionContext
  
 ApplicationSubmissionContext appContext =
@@ -406,21 +222,7 @@ amContainer.setResource ( capability ) ;
  
 appContext.setAMContainerSpec ( amContainer ) ;
 (4) 这之后client可以向ASM提交application：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
+
 // Create the request to send to the ApplicationsManager
  
 SubmitApplicationRequest appRequest =
@@ -437,17 +239,7 @@ appRequest.setApplicationSubmissionContext ( appContext ) ;
  
 applicationsManager. submitApplication ( appRequest ) ;
 （4） 到此为止，ResourceManager应该已经接受该application，并根据资源需求分配一个container，最终在分配的container中启动ApplicationMaster。Client有多种方法跟踪实际任务的进度：可以使用ClientRMProtocal#getApplicationReport与ResourceManager通信以获取application执行当前情况报告。
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
+
 GetApplicationReportRequest request = recordFactory
  
   .newRecordInstance(GetApplicationReportRequest.class);
