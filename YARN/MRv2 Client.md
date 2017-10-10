@@ -1,16 +1,16 @@
 # MRv2的Client端代码分析
+> YARN/MRv2是一个资源统一管理系统，它上面可以运行各种计算框架，而所有计算框架的client端编写方法类似，本文拟以MapReduce计算框架的client端代码为例进行说明。
 
-YARN/MRv2是一个资源统一管理系统，它上面可以运行各种计算框架，而所有计算框架的client端编写方法类似，本文拟以MapReduce计算框架的client端代码为例进行说明。
-2.  两个相关协议
-需要通过两个协议提交作业：
-ClientProtocol：Hadoop中的JobClient通过该协议向JobTracker提交作业
-ClientRMProtocol：Yarn中的client通过该协议向ResourceManager提交作业。
-3. Client设计方法
+1.  两个相关协议通过两个协议提交作业：
+  * ClientProtocol：Hadoop中的JobClient通过该协议向JobTracker提交作业
+  * ClientRMProtocol：Yarn中的client通过该协议向ResourceManager提交作业。
+
+2. Client设计方法
 为了使Hadoop MapReduce无缝迁移到Yarn中，需要在client端同时使用这两个协议，采用的方法是：
-【继承+组合的设计模式】
+继承+组合的设计模式
 设计新类YARNRunner，实现ClientProtocol接口，并将ClientRMProtocol对象作为内部成员。当用户提交作业时，会直接调用YARNRunner中的submitJob函数，在该函数内部，会接调用ClientRMProtocol的submitApplication函数，将作业提交到ResourceManager中。此处的submitApplication函数实际上是一个RPC函数，由ResourceManager实现。
 
-我们看一下ClientRMProtocol接口中的所有方法：
+ClientRMProtocol接口中的所有方法：
 
 public SubmitApplicationResponse submitApplication(
  
@@ -27,12 +27,12 @@ public GetApplicationReportResponse getApplicationReport(
   GetApplicationReportRequest request) throws YarnRemoteException;
 client通过该函数向ResourceManager查询某个application的信息，如id，user，time等信息。
 
-4. 整个流程分析
+3. 整个流程分析
 Client首先通过ClientRMProtocal#getNewApplication获取一个新的“ApplicationId”，然后使用ClientRMProtocal#submitApplication提交一个application，当调用ClientRMProtocal#submitApplication时 ，需要向Resource Manager提供足够的信息以便启动第一个container（实际上就是Application Master）。Client需要提供足够的细节信息，如运行application需要的文件和jar包，执行这些jar包需要的命令，一些unix环境设置等。
 这之后，Resource Manager会首先申请一个container，并在它里面启动ApplicationMaster，之后ApplicationMaster会通过AMRMProtocal和ContainerManager分别与Resource Manager和Node Manager通信进行资源申请和container启动。
 
 具体细节：
-（1） Client向Resource Manager发动一个连接，更具体 一些，实际上是向ResourceManager的ApplicationsManager发动一个连接。
+1. Client向Resource Manager发动一个连接，更具体 一些，实际上是向ResourceManager的ApplicationsManager发动一个连接。
 YarnRPC rpc = YarnRPC.create(this.conf);
  
 InetSocketAddress rmAddress =
@@ -42,7 +42,7 @@ InetSocketAddress rmAddress =
     YarnConfiguration.RM_ADDRESS,
  
     YarnConfiguration.DEFAULT_RM_ADDRESS),
- 
+  
     YarnConfiguration.DEFAULT_RM_PORT,
  
     YarnConfiguration.RM_ADDRESS);
@@ -54,7 +54,7 @@ applicationsManager =
   (ClientRMProtocol) rpc.getProxy(ClientRMProtocol.class,
  
     rmAddress, this.conf);
-（2） 一旦获取一个连接到ASM的handler，client要求ResourceManager分配一个新的ApplicationId。
+2. 一旦获取一个连接到ASM的handler，client要求ResourceManager分配一个新的ApplicationId。
 SubmitApplicationRequest request = recordFactory.newRecordInstance(SubmitApplicationRequest.class);
  
 request.setApplicationSubmissionContext(appContext);
@@ -62,7 +62,7 @@ request.setApplicationSubmissionContext(appContext);
 applicationsManager.submitApplication(request);
  
 LOG.info("Submitted application " + applicationId + " to ResourceManager");
-（3） ASM返回的response中也包含cluster的信息，如该cluster中最少/最大可用资源量，这可以帮助我们合理的设置Application Master需要的资源量，关于更多细节，可查看GetNewApplicationResponse类。
+3. ASM返回的response中也包含cluster的信息，如该cluster中最少/最大可用资源量，这可以帮助我们合理的设置Application Master需要的资源量，关于更多细节，可查看GetNewApplicationResponse类。
 Client最重要的任务是设置对象ApplicationSubmissionContext，它定义了ResourceManager启动ApplicationMaster所需的全部信息。Client需要在该context中设置一下信息：
 [1] 队列，优先级信息：该application将要提交到哪个队列，以及它的优先级是多少。
 [2] 用户：哪个用户提交的application，这主要用于权限管理。
@@ -251,9 +251,9 @@ GetApplicationReportResponse response = applicationsManager
   .getApplicationReport(request);
  
 ApplicationReport applicationReport = response.getApplicationReport();
-从ResourceManager中获取的ApplicationReport包含以下内容：
-[1] 一般的application信息，如：ApplicationId，application所在队列，application对应用户等
-[2] ApplicationMaster信息：ApplicationMaster所在的host，接收用户请求的rpc port以及client与ApplicationMaster通信需要的token等。
-[3] 追踪Application的相关信息：如果application支持进度追踪，可以设置一个tracking url，通过该url，client可以直接获取进度。
-[4] ApplicationStatus：client通过ApplicationReport#getYarnApplicationState可从ResourceManager那获取application的当前状态，如果ApplicationState为FINISHED，client需要调用ApplicationReport#getFinalApplicationStatus检查application运行成功或者失败，如果运行失败，可调用ApplicationReport#getDiagnostics获取application失败的详细信息。
-[5] 如果ApplicationMaster支持，client可直接通过host：rpcport向ApplicationMaster查询其执行进度。当然，也可以使用上面提到的tracking url。
+* 从ResourceManager中获取的ApplicationReport包含以下内容：
+  1. 一般的application信息，如：ApplicationId，application所在队列，application对应用户等
+  2. ApplicationMaster信息：ApplicationMaster所在的host，接收用户请求的rpc port以及client与ApplicationMaster通信需要的token等。
+  3. 追踪Application的相关信息：如果application支持进度追踪，可以设置一个tracking url，通过该url，client可以直接获取进度。
+  4. ApplicationStatus：client通过ApplicationReport#getYarnApplicationState可从ResourceManager那获取application的当前状态，如果ApplicationState为FINISHED，client需要调用ApplicationReport#getFinalApplicationStatus检查application运行成功或者失败，如果运行失败，可调用ApplicationReport#getDiagnostics获取application失败的详细信息。
+  5. 如果ApplicationMaster支持，client可直接通过host：rpcport向ApplicationMaster查询其执行进度。当然，也可以使用上面提到的tracking url。
