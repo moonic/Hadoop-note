@@ -52,10 +52,13 @@ GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request)
 1. 在本地拷贝一份运行Container所需的所有资源（通过Distributed Cache实现）。
 2. 为container创建经隔离的工作目录，并在这些目录中准备好所有（文件）资源。
 3. 运行命令启动container
-日志聚集
-处理用户日志是过去令人头痛的事情之一。与MRv1不同，NM不再截取日志并将日志留单个节点（TaskTracker）上，而是将日志上传到一个文件系统中，比如HDFS，以此来解决日志管理问题。
-在某个NM上，所有属于同一个应用程序的container日志经聚集后被写到（可能经过压缩处理）一个FS上的日志文件中，用户可通过YARN命令行工具，WEB-UI或者直接通过FS访问这些日志。
-MapReduce shuffle如何利用NM的附属服务
-运行MapReduce程序所需的shuffle功能是通过附属服务实现的，该服务会启动一个Netty Server，它知道如何处理来自Reduce Task的MR相关的shuffle请求。MR（MapReduce） AM（ApplicationMaster）为shuffle服务定义了服务ID，和可能需要的安全令牌，而NM向AM提供shuffle服务的运行端口号，并由AM传递给各个Reduce Task。
-结论
-在YARN中，NodeManager主要用于管理抽象的container，它只处理container相关的事情，而不必关心每个应用程序（如MapReduce Task）自身的状态管理，它也不再有类似于map slot和reduce slot的slot概念，正是由于上述各个模块间清晰的责任分离，NM可以很容易的扩展，且它的代码也更容易维护。
+  * 日志聚集
+    * 与MRv1不同，NM不再截取日志并将日志留单个节点（TaskTracker）上，而是将日志上传到一个文件系统中
+    * 比如HDFS，以此来解决日志管理问题。
+    * 在某个NM上，所有属于同一个应用程序的container日志经聚集后被写到（可能经过压缩处理）一个FS上的日志文件中，用户可通过YARN命令行工具，WEB-UI或者直接通过FS访问这些日志。
+
+* MapReduce shuffle如何利用NM的附属服务
+  * 运行MapReduce程序所需的shuffle功能是通过附属服务实现的，该服务会启动一个Netty Server，它知道如何处理来自Reduce Task的MR相关的shuffle请求。
+  * MR（MapReduce） AM（ApplicationMaster）为shuffle服务定义了服务ID，和可能需要的安全令牌，而NM向AM提供shuffle服务的运行端口号，并由AM传递给各个Reduce Task。
+
+### 在YARN中，NodeManager主要用于管理抽象的container，它只处理container相关的事情，而不必关心每个应用程序（如MapReduce Task）自身的状态管理，它也不再有类似于map slot和reduce slot的slot概念，正是由于上述各个模块间清晰的责任分离，NM可以很容易的扩展，且它的代码也更容易维护。
