@@ -1,20 +1,22 @@
 # MRv2 ResourceManager Code
 
-1.    涉及到的状态机
-（1）RMApp：每个application对应一个RMApp对象，保存该application的各种信息。
-（2）RMAppAttempt：每个RMApp可能会对应多个RMAppAttempt对象，这取决于前面的RMAppAttempt是否执行成功，如果不成功，会启动另外一个，直到运行成功。RMAppAttempt对象称为“application执行尝试”，这RMApp与RMAppAttempt关系类似于MapReduce中的task与taskAttempt的关系。
-（3）RMNode：保存各个节点的信息。
-（4）RMContainer：保存各个container的信息。
-2.    事件调度器
-（1）AsyncDispatcher
+##     涉及到的状态机
+  1. RMApp：每个application对应一个RMApp对象，保存该application的各种信息。
+  2. RMAppAttempt：每个RMApp可能会对应多个RMAppAttempt对象，这取决于前面的RMAppAttempt是否执行成功，如果不成功，会启动另外一个，直到运行成功。RMAppAttempt对象称为“application执行尝试”，这RMApp与RMAppAttempt关系类似于MapReduce中的task与taskAttempt的关系。
+  3. RMNode：保存各个节点的信息。
+  4. RMContainer：保存各个container的信息。
+##    事件调度器
+1. AsyncDispatcher
 中央事件调度器，各个状态机的事件调度器会在中央事件调度器中注册，注册方式信息包括：<事件，事件调度器>。该调度器维护了一个事件队列，它会不断扫描整个队列，取出一个事件，检查事件类型，并交给相应的事件调度器处理。
-（2）各个子事件调度器
-事件类型	状态机	事件处理器
+
+2. 各个子事件调度器
+  * 事件类型	状态机	事件处理器
 RMAppEvent	RMApp	ApplicationEventDispatcher
 RMAppAttemptEvent	RMAppAttempt	ApplicationAttemptEventDispatcher
 RMNodeEvent	RMNode	NodeEventDispatcher
 SchedulerEvent	—	SchedulerEventDispatcher
 AMLauncherEvent	—	ApplicationMasterLauncher
+
 3.    ResourceManager中事件处理流
 （1）Client通过RMClientProtocol协议向ResourceManager提交application。
 <1> 代码所在目录：
