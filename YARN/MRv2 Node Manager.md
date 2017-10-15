@@ -38,14 +38,19 @@ GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request)
 注：在最新版YARN中，已采用了Linux container对资源进行隔离
 
 ### NodeHealthCheckerService
-提供以下功能：通过周期性地运行一个配置好的脚本检查节点的健康状况，它也会通过周期性地在磁盘上创建临时文件以监控磁盘健康状况。任何系统健康方面的改变均会通知NodeStatusUpdater（前面已经介绍过），它会进一步将信息传递给RM。
+提供以下功能：通过周期性地运行一个配置好的脚本检查节点的健康状况
+它也会通过周期性地在磁盘上创建临时文件以监控磁盘健康状况
+任何系统健康方面的改变均会通知NodeStatusUpdater（前面已经介绍过），它会进一步将信息传递给RM。
+
+
 ### Security
-（1） ApplicationACLsManager NM需要为所有面向用户的API提供安全检查，如在Web-UI上只能将container日志显示给授权用户。该组件为每个应用程序维护了一个ACL列表，一旦收到类似请求后会利用该列表对其进行验证。
-（2） ContainerTokenSecretManager 检查收到的各种访问请求的合法性，确保这些请求操作已被RM授权。
+1. ApplicationACLsManager NM需要为所有面向用户的API提供安全检查，如在Web-UI上只能将container日志显示给授权用户。该组件为每个应用程序维护了一个ACL列表，一旦收到类似请求后会利用该列表对其进行验证。
+2. ContainerTokenSecretManager 检查收到的各种访问请求的合法性，确保这些请求操作已被RM授权。
 
 ### WebServer
 在给定时间点，展示该节点上所有应用程序和container列表，节点健康相关的信息和container产生的日志。
-【主要功能亮点】
+
+* 主要功能亮点
 启动Container
 为了能够启动Container，NM期望收到的Container定义了关于它运行时所需的详细信息，包括运行container的命令、环境变量、所需的资源列表和安全令牌等。
 一旦收到container启动请求，如果YARN启用了安全机制，则NM首先验证请求合法性以对用户和正确的资源分配进行授权。之后，NM将按照以下步骤启动一个container：
