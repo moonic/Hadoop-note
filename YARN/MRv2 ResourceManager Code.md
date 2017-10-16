@@ -1,6 +1,6 @@
 # MRv2 ResourceManager Code
 
-##     涉及到的状态机
+##   涉及到的状态机
   1. RMApp：每个application对应一个RMApp对象，保存该application的各种信息。
   2. RMAppAttempt：每个RMApp可能会对应多个RMAppAttempt对象，这取决于前面的RMAppAttempt是否执行成功，如果不成功，会启动另外一个，直到运行成功。RMAppAttempt对象称为“application执行尝试”，这RMApp与RMAppAttempt关系类似于MapReduce中的task与taskAttempt的关系。
   3. RMNode：保存各个节点的信息。
@@ -17,38 +17,46 @@ RMNodeEvent	RMNode	NodeEventDispatcher
 SchedulerEvent	—	SchedulerEventDispatcher
 AMLauncherEvent	—	ApplicationMasterLauncher
 
-3.    ResourceManager中事件处理流
-（1）Client通过RMClientProtocol协议向ResourceManager提交application。
-<1> 代码所在目录：
+3.  ResourceManager中事件处理流
+  1.Client通过RMClientProtocol协议向ResourceManager提交application。
+* 代码所在目录：
 hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-jobclient/src/main/java
-<2> jar包：org.apache.hadoop.mapred
-<3>关键类与关键函数：YARNRunner.submitJob()
-（2） ResourceManager端的ClientRMService服务接收到application，使得RMAppManager调用handle函数处理RMAppManagerSubmitEvent事件，处理逻辑如下：为该application创建RMAppImpl对象，保存其信息，接着产生RMAppEventType.START事件.
-<1> 代码所在目录：
+* jar包：org.apache.hadoop.mapred
+
+* 关键类与关键函数：YARNRunner.submitJob()
+  1. ResourceManager端的ClientRMService服务接收到application，使得RMAppManager调用handle函数处理RMAppManagerSubmitEvent事件，处理逻辑如下：为该application创建RMAppImpl对象，保存其信息，接着产生RMAppEventType.START事件.
+* 代码所在目录：
 hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resourcemanager\src\main\java\org\apache\hadoop\yarn\server\resourcemanager
-<2> jar包：org.apache.hadoop.yarn.server.resourcemanager
-<3>关键类与关键函数：ClientRMService.submitApplication()，RMAppManager.submitApplication()
-(3) RMAppEventType.START事件传递给AsyncDispatcher，AsyncDispatcher查看相关数据结构，确定该事件由ApplicationEventDispatcher处理，该dispatcher将RMApp从RMAppState.NEW状态变为RMAppState.SUBMITTED状态，同时创建RMAppAttemptImpl对象，并触发RMAppAttemptEventType.START事件。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp
-<2> 关键类与关键函数：RMAppImpl.StartAppAttemptTransition
-（4）RMAppAttemptEventType.START事件传递给AsyncDispatcher，AsyncDispatcher查看相关数据结构，确定该事件由ApplicationAttemptEventDispatcher处理，该dispatcher将RMAppAttempt从RMAppAttemptState.NEW变为RMAppAttemptState.SUBMITTED状态。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
-<2> 关键类与关键函数：RMAppAttemptImpl.StateMachineFactory
-（5） RMAppAttempt向ApplicationMasterService注册，它将之保存在responseMap中。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
-<2> 关键类与关键函数：RMAppAttemptImpl.AttemptStartedTransition
-（6）RMAppAttempt触发AppAddedSchedulerEvent
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
-<2> 关键类与关键函数：RMAppAttemptImpl.AttemptStartedTransition
-（7）ResourceScheduler（如FifoScheduler）捕获AppAddedSchedulerEvent事件，并创建SchedulerApp对象，使RMAppAttempt对像从RMAppAttemptState.SUBMITTED转化为RMAppAttemptState.SCHEDULED状态，同时产生RMAppAttemptEventType.APP_ACCEPTED事件。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo
-<2> 关键类与关键函数：FifoScheduler.addApplication
-（8）RMAppAttemptEventType.APP_ACCEPTED事件由ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt从RMAppAttemptState.SUBMITTED转化为 RMAppAttemptState.SCHEDULED状态，并产生RMAppEventType.APP_ACCEPTED事件。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
-<2> 关键类：RMAppAttemptImpl.ScheduleTransition
-（9）调用ResourceScheduler的allocate函数，为ApplicationMaster申请一个container。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
-<2> 关键类：RMAppAttemptImpl.ScheduleTransition
+* jar包：org.apache.hadoop.yarn.server.resourcemanager
+* 关键类与关键函数：ClientRMService.submitApplication()，RMAppManager.submitApplication()
+
+* RMAppEventType.START事件传递给AsyncDispatcher，AsyncDispatcher查看相关数据结构，确定该事件由ApplicationEventDispatcher处理，该dispatcher将RMApp从RMAppState.NEW状态变为RMAppState.SUBMITTED状态，同时创建RMAppAttemptImpl对象，并触发RMAppAttemptEventType.START事件。
+  * jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp
+  * 关键类与关键函数：RMAppImpl.StartAppAttemptTransition
+  * RMAppAttemptEventType.START事件传递给AsyncDispatcher，AsyncDispatcher查看相关数据结构，确定该事件由ApplicationAttemptEventDispatcher处理，该dispatcher将RMAppAttempt从RMAppAttemptState.NEW变为RMAppAttemptState.SUBMITTED状态。
+
+* jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
+*  关键类与关键函数：RMAppAttemptImpl.StateMachineFactory
+
+### RMAppAttempt向ApplicationMasterService注册，它将之保存在responseMap中。
+* jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
+*  关键类与关键函数：RMAppAttemptImpl.AttemptStartedTransition
+
+### RMAppAttempt触发AppAddedSchedulerEvent
+1. jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
+2.  关键类与关键函数：RMAppAttemptImpl.AttemptStartedTransition
+
+### ResourceScheduler
+* （如FifoScheduler）捕获AppAddedSchedulerEvent事件，并创建SchedulerApp对象，使RMAppAttempt对像从RMAppAttemptState.SUBMITTED转化为RMAppAttemptState.SCHEDULED状态，同时产生RMAppAttemptEventType.APP_ACCEPTED事件。
+*  jar包：org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo
+*  关键类与关键函数：FifoScheduler.addApplication
+
+* RMAppAttemptEventType.APP_ACCEPTED事件由ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt从RMAppAttemptState.SUBMITTED转化为 RMAppAttemptState.SCHEDULED状态，并产生RMAppEventType.APP_ACCEPTED事件。
+  *  jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
+  * 关键类：RMAppAttemptImpl.ScheduleTransition
+  * 调用ResourceScheduler的allocate函数，为ApplicationMaster申请一个container。
+  * jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
+  * 关键类：RMAppAttemptImpl.ScheduleTransition
 （10）此刻，某个node（称为“AM-NODE”）正好通过heartbeat向ResourceManager.ResourceTrackerService汇报自己所在节点的资源使用情况。
 (11) ResourceTrackerService.nodeHeartbeat收到heartbeat信息后，触发RMNodeStatusEvent(RMNodeEventType.STATUS_UPDATE)事件。
 <1> jar包：org.apache.hadoop.yarn.server.resourcemanager
@@ -67,5 +75,6 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
 （19）ApplicationMasterService收到新的ApplicationMaster注册请求后，会触发RMAppAttemptRegistrationEvent（RMAppAttemptEventType.REGISTERED）事件。
 （20）RMAppAttemptRegistrationEvent事件被 ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt对象从RMAppAttemptState.LAUNCHED状态转化为RMAppAttemptState.RUNNING状态，同时触发RMAppEventType.ATTEMPT_REGISTERED事件。
 （21）至此，该application的ApplicationMaster创建与注册完毕，接下来ApplicationMaster会根据Application的资源需求向ResourceManager请求资源，同时监控各个子任务的执行情况。
+
 4.    ResourceManager中事件处理流直观图
 下图是从另一个方面对上图的重新绘制：
