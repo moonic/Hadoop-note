@@ -6,7 +6,7 @@
  
 
 * ClusterManager实现方法
-  * ClusterManager实际上由两部分组成：节点资源管理器和资源分配模型 节点资源管理器维护各个节点的资源变化，而资源分配模型由（经修改的）MRv1中的Fair Scheduler实现
+  * ClusterManager实际上由两部分组成：节点资源管理器和资源分配模型 节点资源管理器维护各个节点的资源变化，而资源分配模型由（经修改的）MRv1中的Fair Scheduler实现 
   * ClusterManager深度集成了Fair Scheduler，也就是说，调度器模块不再可插拔，它跟ClusterManager紧紧耦合在一起
 ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift RPC实现的，具体涉及到的RPC协议，为了提高效率ClusterManager采用了非阻塞异步编程模型
 
