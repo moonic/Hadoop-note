@@ -6,7 +6,7 @@
 	   * Apache Hadoop Core项目的一部分
      
 ## data Model
-* 类似文件系统 目录和文件保存数据 Znode 
+* 类似文件系统 目录和文件保存数据 Znode  
   * 临时节点
   * 序列节点
  	* 原子操作 读写 
