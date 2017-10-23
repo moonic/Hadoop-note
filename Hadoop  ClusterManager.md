@@ -5,7 +5,7 @@
   2. 将各个节点中的资源按照一定的约束分配（比如每个pool使用的资源不能超过其上线，任务分配时应考虑负载均衡等）给各个应用程序 ClusterManager是一个纯粹的资源管理器，它不再（向MRv1中的JobTracker那样）负责作业监控相关工作，如监控各个任务的运行状态，任务失败时重新启动等CoronaJobTracker完成 
  
 
-* ClusterManager实现方法
+* ClusterManager实现方法 
   * ClusterManager实际上由两部分组成：节点资源管理器和资源分配模型 节点资源管理器维护各个节点的资源变化，而资源分配模型由（经修改的）MRv1中的Fair Scheduler实现 
   * ClusterManager深度集成了Fair Scheduler，也就是说，调度器模块不再可插拔，它跟ClusterManager紧紧耦合在一起
 ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift RPC实现的，具体涉及到的RPC协议，为了提高效率ClusterManager采用了非阻塞异步编程模型
