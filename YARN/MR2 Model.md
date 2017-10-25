@@ -13,8 +13,7 @@ EventHandler被称作事件处理器， 每种事件类型对应一种EventHandl
   * NM：Container，Application
   * 如：application的状态机如下，刚开始application所处状态为NEW，待收到一个STARTED事件后，会转化成SUBMITTED状态。
 
-*  基于actors model的事件模型
-该模型有以下几个特点：
+* 基于actors model的事件模型 该模型有以下几个特点：
   * 每一个计算实体可以：
   *  向其他actor发送有限个信息
   * 收到的消息时触发一个行为
