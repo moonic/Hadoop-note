@@ -1,26 +1,29 @@
 # MapReduce Framework 2
-
-随着集群规模和负载增加，MapReduce JobTracker在内存消耗，线程模型和扩展性/可靠性/性能方面暴露出了缺点，为此需要对它进行大整修。
+> 随着集群规模和负载增加，MapReduce JobTracker在内存消耗，线程模型和扩展性/可靠性/性能方面暴露出了缺点，为此需要对它进行大整修。
 需求
-当我们对Hadoop MapReduce框架进行改进时，需要时刻谨记的一个重要原则是用户的需求。近几年来，从Hadoop用户那里总结出MapReduce框架当前最紧迫的需求有：
-（1）可靠性（Reliability）– JobTracker不可靠
-（2）可用性（Availability）– JobTracker可用性有问题
-（3） 扩展性（Scalibility）-拥有10000个节点和200，000个核的集群
-（4） 向后兼容性（Backward Compatibility）：确保用户的MapReduce作业可无需修改即可运行
-（5）  演化（Evolution）：让用户能够控制软件栈的升级，尤其是与Hive，HBase等的兼容。
-（6） 可预测的延迟：这是用户非常关心的。小作业应该尽可能快得被调度，而当前基于TaskTracker->JobTracker ping（heartbeat）的通信方式代价和延迟过大，比较好的方式是JobTracker->TaskTracker ping, 这样JobTracker可以主动扫描有作业运行的TaskTracker（调用RPC）（见MAPREDUCE-279）。
-（7）集群资源利用率。 Map slot和reduce slot不能共享，且reduce 依赖于map结果，造成reduce task在shuffle阶段资源利用率很低，出现“slot hoarding”现象。
-次重要的需求有：
-（1）支持除MapReduce之外的计算框架，如DAG，迭代计算等。
-（2）  支持受限的，短时间的服务(for example ????)
-面对以上这些需求，我们有必要重新设计整个MapReduce数据计算架构。大家已达成共识：当前的MapReduce架构不能够满足我们上面的需求，而双层调度器（Two level Scheduler）将可解决该问题。
-下一代MapReduce（MRv2/YARN）
-MRv2最基本的设计思想是将JobTracker的两个主要功能，即资源管理和作业调度/监控分成两个独立的进程。在该解决方案中包含两个组件：全局的ResourceManager（RM）和与每个应用相关的ApplicationMaster（AM）。这里的“应用”指一个单独的MapReduce作业或者DAG作业。RM和与NodeManager（NM，每个节点一个）共同组成整个数据计算框架。RM是系统中将资源分配给各个应用的最终决策者。AM实际上是一个具体的框架库，它的任务是【与RM协商获取应用所需资源】和【与NM合作，以完成执行和监控task的任务】。
 
-RM有两个组件组成：
-调度器（Scheduler）
-应用管理器（ApplicationsManager，ASM）
-调度器根据容量，队列等限制条件（如每个队列分配一定的资源，最多执行一定数量的作业等），将系统中的资源分配给各个正在运行的应用。这里的调度器是一个“纯调度器”，因为它不再负责监控或者跟踪应用的执行状态等，此外，他也不负责重新启动因应用执行失败或者硬件故障而产生的失败任务。调度器仅根据各个应用的资源需求进行调度，这是通过抽象概念“资源容器”完成的，资源容器（Resource Container）将内存，CPU，磁盘，网络等资源封装在一起，从而限定每个任务使用的资源量。（注：Hadoop-0.23.0【资料一， 资料二】中的Container采用了“监控linux进程”来限制每个任务的资源，即：有个监控线程周期性地从linux虚拟文件系统/proc/中读取相应进程树使用的资源总量，一旦检测到超出限制，则直接kill该task，今后的版本想严格限制内存，CPU，网络，磁盘等资源，也许会采用cgroups，关于cgroups，可参考：【cgroups.txt】，【cgroup及资源管理】，cgroups在淘宝，百度等公司已经开始使用。）。
+* 当我们对Hadoop MapReduce框架进行改进时，需要时刻谨记的一个重要原则是用户的需求。近几年来，从Hadoop用户那里总结出MapReduce框架当前最紧迫的需求有：
+  1. 可靠性（Reliability）– JobTracker不可靠
+  2.可用性（Availability）– JobTracker可用性有问题
+  3. 扩展性（Scalibility）-拥有10000个节点和200，000个核的集群
+  4. 向后兼容性（Backward Compatibility）：确保用户的MapReduce作业可无需修改即可运行
+  5. 演化（Evolution）：让用户能够控制软件栈的升级，尤其是与Hive，HBase等的兼容。
+  6. 可预测的延迟：这是用户非常关心的。小作业应该尽可能快得被调度，而当前基于TaskTracker->JobTracker ping（heartbeat）的通信方式代价和延迟过大，比较好的方式是JobTracker->TaskTracker ping, 这样JobTracker可以主动扫描有作业运行的TaskTracker（调用RPC）（见MAPREDUCE-279）。
+  7.集群资源利用率。 Map slot和reduce slot不能共享，且reduce 依赖于map结果，造成reduce task在shuffle阶段资源利用率很低，出现“slot hoarding”现象。
+
+* 次重要的需求有：
+  1.支持除MapReduce之外的计算框架，如DAG，迭代计算等。
+  2.  支持受限的，短时间的服务(for example ????)
+面对以上这些需求，我们有必要重新设计整个MapReduce数据计算架构。大家已达成共识：当前的MapReduce架构不能够满足我们上面的需求，而双层调度器（Two level Scheduler）将可解决该问题。
+
+* 下一代MapReduce（MRv2/YARN）
+  * MRv2最基本的设计思想是将JobTracker的两个主要功能，即资源管理和作业调度/监控分成两个独立的进程。在该解决方案中包含两个组件：全局的ResourceManager（RM）和与每个应用相关的ApplicationMaster（AM）。
+   * 这里的“应用”指一个单独的MapReduce作业或者DAG作业。RM和与NodeManager（NM，每个节点一个）共同组成整个数据计算框架。RM是系统中将资源分配给各个应用的最终决策者。AM实际上是一个具体的框架库，它的任务是【与RM协商获取应用所需资源】和【与NM合作，以完成执行和监控task的任务】。
+
+* RM有两个组件组成：
+  * 调度器（Scheduler）
+  * 应用管理器（ApplicationsManager，ASM）
+    * 调度器根据容量，队列等限制条件（如每个队列分配一定的资源，最多执行一定数量的作业等），将系统中的资源分配给各个正在运行的应用。这里的调度器是一个“纯调度器”，因为它不再负责监控或者跟踪应用的执行状态等，此外，他也不负责重新启动因应用执行失败或者硬件故障而产生的失败任务。调度器仅根据各个应用的资源需求进行调度，这是通过抽象概念“资源容器”完成的，资源容器（Resource Container）将内存，CPU，磁盘，网络等资源封装在一起，从而限定每个任务使用的资源量。（注：Hadoop-0.23.0【资料一， 资料二】中的Container采用了“监控linux进程”来限制每个任务的资源，即：有个监控线程周期性地从linux虚拟文件系统/proc/中读取相应进程树使用的资源总量，一旦检测到超出限制，则直接kill该task，今后的版本想严格限制内存，CPU，网络，磁盘等资源，也许会采用cgroups，关于cgroups，可参考：【cgroups.txt】，【cgroup及资源管理】，cgroups在淘宝，百度等公司已经开始使用。）。
 调度器是可插拔的组件，主要负责将集群中得资源分配给多个队列和应用。YARN自带了多个资源调度器，如Capacity Scheduler和Fair Scheduler等。
 ASM主要负责接收作业，协商获取第一个容器用于执行AM和提供重启失败AM container的服务。
 NM是每个节点上的框架代理，主要负责启动应用所需的容器，监控资源（内存，CPU，磁盘，网络等）的使用情况并将之汇报给调度器。
