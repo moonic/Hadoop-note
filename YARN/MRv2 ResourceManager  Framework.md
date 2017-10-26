@@ -42,5 +42,6 @@ ApplicationMasterLauncher：创建ApplicationMaster
 NMLivelinessMonitor：监控各个Nodemanager是否存活，默认情况下，如果某个NodeManage在10min内卫汇报心跳，则认为该节点出现故障。
 RMAppManager：application管理者，client端提交的作业会最终提交给该类。
 ResourceScheduler：非常核心的组件，application调度器，当某个节点出现空闲资源使，采用某种策略从application队列中选择某个application使用这些空闲资源。当前有两种调度器： FIFO（First In First Out，默认调度器）和CapacityScheduelr（与Hadoop MapReduce中的Capacity Scheduler思想相同）。
-ApplicationACLsManager：Application权限管理，即：对于某个application，哪些用户可以查看运行状态，哪些可以修改运行时属性，如优先级等。
+* ApplicationACLsManager：Application权限管理
+  * 对于某个application，哪些用户可以查看运行状态，哪些可以修改运行时属性，如优先级等。
 NodesListManager：node列表管理，可以动态往集群中添加节点或者减少节点。
