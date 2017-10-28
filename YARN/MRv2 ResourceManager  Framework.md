@@ -45,3 +45,4 @@ RMAppAttemptImpl.java实现
 * ApplicationACLsManager：Application权限管理
   * 对于某个application，哪些用户可以查看运行状态，哪些可以修改运行时属性，如优先级等。
 NodesListManager：node列表管理，可以动态往集群中添加节点或者减少节点。
+ 
