@@ -57,15 +57,15 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
   * 调用ResourceScheduler的allocate函数，为ApplicationMaster申请一个container。
   * jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
   * 关键类：RMAppAttemptImpl.ScheduleTransition
-（10）此刻，某个node（称为“AM-NODE”）正好通过heartbeat向ResourceManager.ResourceTrackerService汇报自己所在节点的资源使用情况。
-(11) ResourceTrackerService.nodeHeartbeat收到heartbeat信息后，触发RMNodeStatusEvent(RMNodeEventType.STATUS_UPDATE)事件。
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager
-<2> 关键类：ResourceTrackerService.nodeHeartbeat
-(12) RMNodeStatusEvent被ResourceScheduler捕获，调用assginContainers为该application分配一个container（用对象RMContainer表示），分配之后，会触发一个RMContainerEventType.START事件。
-（13） RMContainerEventType.START事件被NodeEventDispatcher捕获，使得RMContainer对象从RMContainerState.NEW状态转变为RMContainerState.ALLOCATED状态，同时触发RMAppAttemptContainerAllocatedEvent（RMAppAttemptEventType.CONTAINER_ALLOCATED）事件.
-<1> jar包：org.apache.hadoop.yarn.server.resourcemanager.rmcontainer
-<2> 关键类：RMContainerImpl.ContainerStartedTransition
-(14) RMAppAttemptContainerAllocatedEvent事件被 ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt对象从RMAppAttemptState.SCHEDULED状态转变为RMAppAttemptState.ALLOCATED状态，同时调用Scheduler的allocate函数申请一个container，并触发AMLauncherEventType.LAUNCH事件
+  * 此刻，某个node（称为“AM-NODE”）正好通过heartbeat向ResourceManager.ResourceTrackerService汇报自己所在节点的资源使用情况。    
+  * ResourceTrackerService.nodeHeartbeat收到heartbeat信息后，触发RMNodeStatusEvent(RMNodeEventType.STATUS_UPDATE)事件。
+    * jar包：org.apache.hadoop.yarn.server.resourcemanager
+    *  关键类：ResourceTrackerService.nodeHeartbeat
+  * RMNodeStatusEvent被ResourceScheduler捕获，调用assginContainers为该application分配一个container（用对象RMContainer表示），分配之后，会触发一个RMContainerEventType.START事件。
+  * RMContainerEventType.START事件被NodeEventDispatcher捕获，使得RMContainer对象从RMContainerState.NEW状态转变为RMContainerState.ALLOCATED状态，同时触发RMAppAttemptContainerAllocatedEvent（RMAppAttemptEventType.CONTAINER_ALLOCATED）事件.
+    * jar包：org.apache.hadoop.yarn.server.resourcemanager.rmcontainer
+    * 关键类：RMContainerImpl.ContainerStartedTransition
+  * RMAppAttemptContainerAllocatedEvent事件被 ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt对象从RMAppAttemptState.SCHEDULED状态转变为RMAppAttemptState.ALLOCATED状态，同时调用Scheduler的allocate函数申请一个container，并触发AMLauncherEventType.LAUNCH事件
 （15）AMLauncherEventType.LAUNCH事件被ApplicationMasterLauncher捕获，主要处理逻辑如下：创建一个AMLauncher对象，并添加到队列masterEvents中，等待处理；一旦被处理，会调用AMLauncher.launch()函数，该函数会调用ContainerManager.startContainer()函数创建container，同时触发RMAppAttemptEventType.LAUNCHED事件。
 <1> jar包：org.apache.hadoop.yarn.server.resourcemanager.amlauncher
 <2> 关键类：ApplicationMasterLauncher
