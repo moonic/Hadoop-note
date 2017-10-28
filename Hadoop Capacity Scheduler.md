@@ -31,7 +31,7 @@ finishedMapTasks/finishedReduceTasks：job已完成的map/reduce task数
 * 	task维护的信息
 task开始运行时间，当前状态等
 
-* 计算能力调度算法
+* 计算能力调度算法 
 当某个tasktracker上出现空闲slot时，调度器依次选择一个queue、（选中的queue中的）job、（选中的job中的）task，并将该slot分配给该task。
 
 * 选择queue、job和task所采用的策略：
