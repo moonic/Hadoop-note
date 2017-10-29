@@ -13,7 +13,7 @@ new ApplicationEventDispatcher(this.rmContext));
 * Register函数有两个参数，第一个是事件类型，另一个是事件处理器。
   * 每种事件对应一种事件处理器，一旦该事件发生，事件调度器会直接交由其对应的事件处理器处理，而事件处理器实际上是一个状态机，
   * 事件会使一个对象从一种状态变为另一种状态，并触发相应的行为；
-  * RPC服务主要功能是创建一个RPC server，供远程客户端调用提供的服务（接口）。
+  * RPC服务主要功能是创建一个RPC server，供远程客户端调用提供的服务（接口）。 
   * 实现时，会继承AbstractService抽象类，实现某个RPC协议，并调用YarnRPC中的getServer接口创建一个server以供客户端RPC调用。主要涉及四个RPC服务
   * ApplicationMasterService（实现AMRMProtocol协议）
   * ResourceTrackerService（实现ResourceTracker协
