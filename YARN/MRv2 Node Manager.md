@@ -66,4 +66,6 @@ GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request)
   * 运行MapReduce程序所需的shuffle功能是通过附属服务实现的，该服务会启动一个Netty Server，它知道如何处理来自Reduce Task的MR相关的shuffle请求。
   * MR（MapReduce） AM（ApplicationMaster）为shuffle服务定义了服务ID，和可能需要的安全令牌，而NM向AM提供shuffle服务的运行端口号，并由AM传递给各个Reduce Task。
 
-### 在YARN中，NodeManager主要用于管理抽象的container，它只处理container相关的事情，而不必关心每个应用程序（如MapReduce Task）自身的状态管理，它也不再有类似于map slot和reduce slot的slot概念，正是由于上述各个模块间清晰的责任分离，NM可以很容易的扩展，且它的代码也更容易维护。
+* 在YARN中，NodeManager主要用于管理抽象的container
+  * 它只处理container相关的事情，而不必关心每个应用程序（如MapReduce Task）自身的状态管理
+  * 不再有类似于map slot和reduce slot的slot概念，正是由于上述各个模块间清晰的责任分离，NM可以很容易的扩展，且它的代码也更容易维护。
