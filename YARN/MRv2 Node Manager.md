@@ -12,7 +12,7 @@
 * 接下来，NM与RM通信，汇报各个Container的状态更新，包括节点上正运行的Container、已完成的Contaner等。
 * 此外，RM可能向NodeStatusUpdater发信号，杀死处于运行中的Container。
 > 注：NodeStatusUpdater是NM与RM通信的唯一通道，它实际上是RPC协议ResourceTracker的client，它周期性地调用RPC函数nodeHeartbeat()向RM汇报本节点上各种信息，包括资源使用情况，各个Container运行情况等。
-
+ 
 ### ContainerManager
 * 它是NodeManager中核心组件，它由以下几个子组件构成
 * 每个子组件负责一部分功能，以管理运行在该节点上的所有Container
