@@ -24,7 +24,7 @@
 
 * 共享锁 Locks	
 	* create with EPHEMERAL
-	*列队管理
+	* 列队管理
 		* P:List of create with EPHEMERAL_SEQUEMTIAL
 		* C：getChildren wath create tag zonde
 
