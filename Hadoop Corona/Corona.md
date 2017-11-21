@@ -1,5 +1,5 @@
 # Hadoop Corona
-> Hadoop Corona是facebook开源的下一代MapReduce框架。其基本设计动机和Apache的YARN一致，在此不再重复，读者可参考我的这篇文章“下一代Apache Hadoop MapReduce框架的架构”。
+> Hadoop Corona是facebook开源的下一代MapReduce框架。其基本设计动机和Apache的YARN一致，在此不再重复，读者可参考我的这篇文章“下一代Apache Hadoop MapReduce框架的架构”。 
 
 * 基本组件介绍
 1. Cluster Manager 类似于YARN中的Resource Manager，负责资源分配和调度。Cluster Manager掌握着各个节点的资源使用情况，并将资源分配给各个作业（默认调度器为Fair Scheduler）。同YARN中的Resource Manager一样，Resource Manager是一个高度抽象的资源统一分配与调度框架，它不仅可以为MapReduce，也可以为其他计算框架分配资源。
@@ -23,32 +23,38 @@
 
  
 * 启动Corona Job Tracker过程分析
-为了与MRv1兼容，Hadoop Corona仍由JobClient提交作业，但里面的代码已经经过修改：如果采用Corona，则会创建一个CoronaJobTracker对象提交作业（CoronaJobTracker有可充当多个角色，其中一个角色是JobClient，即客户端），之后过程如下（注意，本节介绍的是CoronaJobTracker远程启动方式，对于小作业，CoronaJobTracker直接在客户端启动，因此，这一节介绍的步骤会直接跳过）：
-步骤1 JobClient与RemoteJTProxy通信，要求并等待其启动CoronaJobTracker。
-步骤2 RemoteJTProxy收到请求后，向Cluster Manager申请资源。
-步骤3 Cluster Manager中的Fair Scheduler调度器为其分配合适的资源，并push给RemoteJTProxy。
-步骤4 RemoteJTProxy根据分配到的资源（在哪个TaskTracker上，可使用多少资源），与对应的CoronaTaskTracker通信，要求它启动CoronaJobTracker。
-步骤5 CoronaTaskTracker成功启动CoronaJobTracker后，告诉RemoteJTProxy，然后就再由RemoteJTProxy告诉JobClient。
-步骤6 CoronaJobTracker（即JobClient）得知CoronaJobTracker启动成功后，向RemoteJTProxy提交作业，然后由RemoteJTProxy进一步将作业提交到刚刚启动的CoronaJobTracker上。
+  * 为了与MRv1兼容，Hadoop Corona仍由JobClient提交作业，但里面的代码已经经过修改：
+  * 如果采用Corona，则会创建一个CoronaJobTracker对象提交作业（CoronaJobTracker有可充当多个角色，其中一个角色是JobClient，即客户端），之后过程如下（注意，本节介绍的是CoronaJobTracker远程启动方式
+  * 对于小作业，CoronaJobTracker直接在客户端启动，因此，这一节介绍的步骤会直接跳过）：
+  1. JobClient与RemoteJTProxy通信，要求并等待其启动CoronaJobTracker。
+  2. RemoteJTProxy收到请求后，向Cluster Manager申请资源。
+  3. Cluster Manager中的Fair Scheduler调度器为其分配合适的资源，并push给RemoteJTProxy。
+  4. RemoteJTProxy根据分配到的资源（在哪个TaskTracker上，可使用多少资源），与对应的CoronaTaskTracker通信，要求它启动CoronaJobTracker。
+  5. CoronaTaskTracker成功启动CoronaJobTracker后，告诉RemoteJTProxy，然后就再由RemoteJTProxy告诉JobClient。
+  6. CoronaJobTracker（即JobClient）得知CoronaJobTracker启动成功后，向RemoteJTProxy提交作业，然后由RemoteJTProxy进一步将作业提交到刚刚启动的CoronaJobTracker上。
 至此，一个作业提交成功。
 
 * 资源申请与任务启动过程分析
-  * 首先需要注意的是，各个CoronaTaskTracker会通过心跳周期性的将本节点上资源使用情况汇报给Cluster Manager，因此，Cluster Manager掌握着各个节点的资源使用情况。
-CoronaJobTracker负责为某个作业申请资源，并与CoronaTaskTracker通信，运行它的Task，总之，CoronaJobTracker功能如下：
-(1)     向Cluster Manager申请资源
-(2)     释放资源与资源重用。 Cluster Manager中的调度器支持资源抢占，可随时命令某个CoronaJobTracker释放资源，另外，CoronaJobTracker可根据需要，自行决定资源是不是重用，即某个Task运行完后，可不必归还给Cluster Manager，可再给其他Task使用。
-(3)     与CoronaTaskTracker通信，以启动任务。
-(4)     任务推测执行，具体可参考“Hadoop中Speculative Task调度策略”。
-(5)     任务容错。当任务执行失败后，向Cluster Manager重新申请资源，以重新运行该任务。
+  * 首先需要注意的是，各个CoronaTaskTracker会通过心跳周期性的将本节点上资源使用情况汇报给Cluster Manager
+  因此，Cluster Manager掌握着各个节点的资源使用情况。
+CoronaJobTracker负责为某个作业申请资源，并与CoronaTaskTracker通信，运行它的Task，总之
+
+* CoronaJobTracker功能如下：
+  1. 向Cluster Manager申请资源
+  2.     释放资源与资源重用。 Cluster Manager中的调度器支持资源抢占，可随时命令某个CoronaJobTracker释放资源，另外，CoronaJobTracker可根据需要，自行决定资源是不是重用，即某个Task运行完后，可不必归还给Cluster Manager，可再给其他Task使用。
+  3.     与CoronaTaskTracker通信，以启动任务。
+  4.     任务推测执行，具体可参考“Hadoop中Speculative Task调度策略”。
+  5.     任务容错。当任务执行失败后，向Cluster Manager重新申请资源，以重新运行该任务。
 资源申请与任务启动过程如下图所示，已经非常清楚，在此不赘述。
 
  
 *   Hadoop Corona实现
-Hadoop Corona位于目录hadoop-20-yahoo\src\contrib\corona下，读者可直接从https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona上下载。Hadoop Corona代码由两部分组成：
-(1)     org.apache.hadoop.corona        Hadoop Corona核心实现，用于资源分配和调度，与具体的分布式计算框架（如Storm、Spark等）无关。
-(2)     org.apache.hadoop.mapred      改造后的MRv1，使之能够运行在Hadoop Corona上。用户可仿照该实现，将其他计算框架移植到Hadoop Corona中。
-Hadoop Corona中CoronaJobTracker与ClusterManager的通信用到了thrift，它们既是thrift Client，也是Thrift Server，具体如下：
-(1)     CoronaJobTracker需与ClusterManager通信，以申请资源，此时ClusterManager是thrfit Server，具体见ClusterManager.thrift中的service ClusterManagerService定义。
-(2)     当ClusterManager中的调度器为CoronaJobTracker分配到资源后，采用push机制直接推送给CoronaJobTracker，此时CoronaJobTracker是thrift Server，具体见ClusterManager.thrift中的service SessionDriverService定义。
+  * Hadoop Corona位于目录hadoop-20-yahoo\src\contrib\corona下，读者可直接从https://github.com/facebook/hadoop-20/tree/master/src/contrib/corona上下载。Hadoop Corona代码由两部分组成：
+  1. org.apache.hadoop.corona        Hadoop Corona核心实现，用于资源分配和调度，与具体的分布式计算框架（如Storm、Spark等）无关。
+  2.org.apache.hadoop.mapred      改造后的MRv1，使之能够运行在Hadoop Corona上。用户可仿照该实现，将其他计算框架移植到Hadoop Corona中。
+
+* Hadoop Corona中CoronaJobTracker与ClusterManager的通信用到了thrift，它们既是thrift Client，也是Thrift Server
+  1.CoronaJobTracker需与ClusterManager通信，以申请资源，此时ClusterManager是thrfit Server，具体见ClusterManager.thrift中的service ClusterManagerService定义。
+  2.当ClusterManager中的调度器为CoronaJobTracker分配到资源后，采用push机制直接推送给CoronaJobTracker，此时CoronaJobTracker是thrift Server，具体见ClusterManager.thrift中的service SessionDriverService定义。
 CoronaJobTracker与CoronaTaskTracker之间的通信机制与MRv1基本一致，在此不赘述。
 此外，Hadoop Corona重新实现了JobInProgress（CoronaJobInProgress）和TaskInProgress（CoronaTaskInProgress），但重用了MRv1的Task、MapTask和ReduceTask类。
