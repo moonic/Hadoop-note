@@ -2,10 +2,10 @@
 > Hadoop Corona是facebook开源的下一代MapReduce框架。其基本设计动机和Apache的YARN一致，在此不再重复，读者可参考我的这篇文章“下一代Apache Hadoop MapReduce框架的架构”。 
 
 * 基本组件介绍
-1. Cluster Manager 类似于YARN中的Resource Manager，负责资源分配和调度。Cluster Manager掌握着各个节点的资源使用情况，并将资源分配给各个作业（默认调度器为Fair Scheduler）。同YARN中的Resource Manager一样，Resource Manager是一个高度抽象的资源统一分配与调度框架，它不仅可以为MapReduce，也可以为其他计算框架分配资源。
-2. Corona Job Tracker 类似于YARN中的Application Master，用于作业的监控和容错，它可以运行在两个模式下：1） 作为JobClient，用于提交作业和方便用户跟踪作业运行状态 2）   作为一个Task运行在某个TaskTracker上。与MRv1中的Job Tracker不同，每个Corona Job Tracker只负责监控一个作业。
-3. Corona Task Tracker 类似于YARN中的Node Manager，它的实现重用了MRv1中Task Tracker的很多代码，它通过心跳将节点资源使用情况汇报给Cluster Manager，同时会与Corona Job Tracker通信，以获取新任务和汇报任务运行状态。
-4.     Proxy Job Tracker 用于离线展示一个作业的历史运行信息，包括Counter、metrics、各个任务运行信息等。
+  1. Cluster Manager 类似于YARN中的Resource Manager，负责资源分配和调度。Cluster Manager掌握着各个节点的资源使用情况，并将资源分配给各个作业（默认调度器为Fair Scheduler）。同YARN中的Resource Manager一样，Resource Manager是一个高度抽象的资源统一分配与调度框架，它不仅可以为MapReduce，也可以为其他计算框架分配资源。
+  2. Corona Job Tracker 类似于YARN中的Application Master，用于作业的监控和容错，它可以运行在两个模式下：1） 作为JobClient，用于提交作业和方便用户跟踪作业运行状态 2）   作为一个Task运行在某个TaskTracker上。与MRv1中的Job Tracker不同，每个Corona Job Tracker只负责监控一个作业。
+  3. Corona Task Tracker 类似于YARN中的Node Manager，它的实现重用了MRv1中Task Tracker的很多代码，它通过心跳将节点资源使用情况汇报给Cluster Manager，同时会与Corona Job Tracker通信，以获取新任务和汇报任务运行状态。
+  4. roxy Job Tracker 用于离线展示一个作业的历史运行信息，包括Counter、metrics、各个任务运行信息等。
 
 * Hadoop Corona工作流程
   * 当用户提交一个作业后，Hadoop Corona分两个阶段运行该作业，首先由RemoteJTProxy向Cluster Manager申请资源，以启动一个Corona Job Tracker，然后Corona Job Tracker向Cluster Manager申请资源，运行该作业的任务。
@@ -31,13 +31,13 @@
   3. Cluster Manager中的Fair Scheduler调度器为其分配合适的资源，并push给RemoteJTProxy。
   4. RemoteJTProxy根据分配到的资源（在哪个TaskTracker上，可使用多少资源），与对应的CoronaTaskTracker通信，要求它启动CoronaJobTracker。
   5. CoronaTaskTracker成功启动CoronaJobTracker后，告诉RemoteJTProxy，然后就再由RemoteJTProxy告诉JobClient。
-  6. CoronaJobTracker（即JobClient）得知CoronaJobTracker启动成功后，向RemoteJTProxy提交作业，然后由RemoteJTProxy进一步将作业提交到刚刚启动的CoronaJobTracker上。
-至此，一个作业提交成功。
+  6. CoronaJobTracker（即JobClient）得知CoronaJobTracker启动成功后，向RemoteJTProxy提交作业
+  然后由RemoteJTProxy进一步将作业提交到刚刚启动的CoronaJobTracker上。至此，一个作业提交成功。
 
 * 资源申请与任务启动过程分析
   * 首先需要注意的是，各个CoronaTaskTracker会通过心跳周期性的将本节点上资源使用情况汇报给Cluster Manager
-  因此，Cluster Manager掌握着各个节点的资源使用情况。
-CoronaJobTracker负责为某个作业申请资源，并与CoronaTaskTracker通信，运行它的Task，总之
+  * ，Cluster Manager掌握着各个节点的资源使用情况。
+  * ronaJobTracker负责为某个作业申请资源，并与CoronaTaskTracker通信，运行它的Task，总之
 
 * CoronaJobTracker功能如下：
   1. 向Cluster Manager申请资源
@@ -57,4 +57,4 @@ CoronaJobTracker负责为某个作业申请资源，并与CoronaTaskTracker通�
   1.CoronaJobTracker需与ClusterManager通信，以申请资源，此时ClusterManager是thrfit Server，具体见ClusterManager.thrift中的service ClusterManagerService定义。
   2.当ClusterManager中的调度器为CoronaJobTracker分配到资源后，采用push机制直接推送给CoronaJobTracker，此时CoronaJobTracker是thrift Server，具体见ClusterManager.thrift中的service SessionDriverService定义。
 CoronaJobTracker与CoronaTaskTracker之间的通信机制与MRv1基本一致，在此不赘述。
-此外，Hadoop Corona重新实现了JobInProgress（CoronaJobInProgress）和TaskInProgress（CoronaTaskInProgress），但重用了MRv1的Task、MapTask和ReduceTask类。
+  3. oop Corona重新实现了JobInProgress（CoronaJobInProgress）和TaskInProgress（CoronaTaskInProgress），但重用了MRv1的Task、MapTask和ReduceTask类。
