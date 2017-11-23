@@ -41,11 +41,11 @@
 
 * CoronaJobTracker功能如下：
   1. 向Cluster Manager申请资源
-  2.     释放资源与资源重用。 Cluster Manager中的调度器支持资源抢占，可随时命令某个CoronaJobTracker释放资源，另外，CoronaJobTracker可根据需要，自行决定资源是不是重用，即某个Task运行完后，可不必归还给Cluster Manager，可再给其他Task使用。
-  3.     与CoronaTaskTracker通信，以启动任务。
-  4.     任务推测执行，具体可参考“Hadoop中Speculative Task调度策略”。
-  5.     任务容错。当任务执行失败后，向Cluster Manager重新申请资源，以重新运行该任务。
-资源申请与任务启动过程如下图所示，已经非常清楚，在此不赘述。
+  2.  释放资源与资源重用。 Cluster Manager中的调度器支持资源抢占，可随时命令某个CoronaJobTracker释放资源，另外，CoronaJobTracker可根据需要，自行决定资源是不是重用，即某个Task运行完后，可不必归还给Cluster Manager，可再给其他Task使用。
+  3. 与CoronaTaskTracker通信，以启动任务。
+  4. 任务推测执行，具体可参考“Hadoop中Speculative Task调度策略”。
+  5. 任务容错。当任务执行失败后，向Cluster Manager重新申请资源，以重新运行该任务。
+  资源申请与任务启动过程如下图所示，已经非常清楚，在此不赘述。
 
  
 *   Hadoop Corona实现
