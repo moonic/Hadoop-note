@@ -33,7 +33,7 @@ ClusterManager架构图如下所示：
 <minREDUCE>100</minREDUCE>
 <maxMAP>200</maxMAP>
 <maxREDUCE>200</maxREDUCE>
-<weight>2.0</weight>
+<weight>2.0</weight> 
 <schedulingMode>FIFO</schedulingMode>
 </pool>
 <pool name=”pool_nonsla”>
