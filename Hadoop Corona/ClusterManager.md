@@ -52,10 +52,17 @@
 </group>
 </configuration>
 ```
-该配置文件中有三个参数需要解释：
-1. grantsPerIteration 该参数表示一次性分配的task数目上限，默认是5000，如果你的集群足够小，那么，Corona可以一次性将集群中所有任务分配到各个节点上。MRv1中的资源分配是以TaskTracker为单位进行的，也就是说，只有当TaskTracker汇报心跳请求新任务时，调度器才会为该节点分配任务，而Corona则是采用了异步模型批量分配任务，它将汇报心跳和分配任务分开，分别由不同的协议实现，当分配完一批任务后，它会通知一些线程，由这些线程进一步通知各个CoronaJobTracker，然后再由CoronaJobTracker与各个CoronaTaskTracker交互，进而启动任务。
-2. schedulingMode 即pool内部采用的调度模式，Corona提供6种调度模式，分别是FAIR（Fair Scheduling）、FIFO（考虑优先级和达到时间）、DEADLINE（基于作业deadline，用户提交作业时可通过参数“mapred.job.deadline”为作业设置一个时间限制，调度器会优先调度deadline最小的作业）、FAIR_PREEMPT（-1*FAIR）、FIFO_PREEMPT（-1* FIFO）和DEADLINE_PREEMPT（-1* DEADLINE）。
-3. minMAP/minREDUCE/maxMAP/maxREDUCE group或者pool中至少保证的资源数目（需要注意，由于group包含pool，因此，每个group的参数应不小于其内部各个pool对应参数之和）和最多可用的资源数目（注意，是数目，不是百分比！）。说到这，很多读者可能不理解了，前面提到Corona是基于真实资源量进行调度的，在此应该配置内存、CPU等这种资源的使用限制才说的过去，为什么只配置一个数目呢？个人觉得，这是Corona与MRv1杂交的结果，Corona是在MRv1基础上实现的，它的资源分配模型掺有MRv1的特点，它并不能说是一个纯的，像YARN那样，基于真实资源量的调度模型。阅读其代码可发现，在pool或者group内部，一旦分配了一个新任务，则对应的资源使用量会加1，也就是说，这四个参数实际上是配置的Task数目限制！
+* 该配置文件中有三个参数需要解释：
+  1. grantsPerIteration 该参数表示一次性分配的task数目上限，默认是5000，如果你的集群足够小，那么，Corona可以一次性将集群中所有任务分配到各个节点上。
+  * MRv1中的资源分配是以TaskTracker为单位进行的，也就是说，只有当TaskTracker汇报心跳请求新任务时，调度器才会为该节点分配任务，而Corona则是采用了异步模型批量分配任务，它将汇报心跳和分配任务分开
+  * 分别由不同的协议实现，当分配完一批任务后，它会通知一些线程，由这些线程进一步通知各个CoronaJobTracker，然后再由CoronaJobTracker与各个CoronaTaskTracker交互，进而启动任务。
+  2. schedulingMode 即pool内部采用的调度模式，Corona提供6种调度模式，
+  * FAIR（Fair Scheduling）、FIFO（考虑优先级和达到时间）
+  * DEADLINE（基于作业deadline，用户提交作业时可通过参数“mapred.job.deadline”为作业设置一个时间限制，调度器会优先调度deadline最小的业）、   * FAIR_PREEMPT（-1*FAIR）,FIFO_PREEMPT（-1* FIFO）和DEADLINE_PREEMPT（-1* DEADLINE）。
+
+  3. minMAP/minREDUCE/maxMAP/maxREDUCE group或者pool中至少保证的资源数目（需要注意，由于group包含pool，因此，每个group的参数应不小于其内部各个pool对应参数之和）和最多可用的资源数目（注意，是数目，不是百分比！）。
+  * 前面提到Corona是基于真实资源量进行调度的，在此应该配置内存、CPU等这种资源的使用限制才说的过去，为什么只配置一个数目呢？
+  * 这是Corona与MRv1杂交的结果，Corona是在MRv1基础上实现的，它的资源分配模型掺有MRv1的特点，它并不能说是一个纯的，像YARN那样，基于真实资源量的调度模型。阅读其代码可发现，在pool或者group内部，一旦分配了一个新任务，则对应的资源使用量会加1，也就是说，这四个参数实际上是配置的Task数目限制！
 
 
 * SessionNotifierThread
