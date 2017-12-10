@@ -49,7 +49,7 @@
 <maxMAP>200</maxMAP>
 <maxREDUCE>200</maxREDUCE>
 <weight>3.0</weight>
-</group>
+</group> 
 </configuration>
 ```
 * 该配置文件中有三个参数需要解释：
