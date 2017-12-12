@@ -54,7 +54,7 @@
   2.org.apache.hadoop.mapred      改造后的MRv1，使之能够运行在Hadoop Corona上。用户可仿照该实现，将其他计算框架移植到Hadoop Corona中。
 
 * Hadoop Corona中CoronaJobTracker与ClusterManager的通信用到了thrift，它们既是thrift Client，也是Thrift Server
-  1.CoronaJobTracker需与ClusterManager通信，以申请资源，此时ClusterManager是thrfit Server，具体见ClusterManager.thrift中的service ClusterManagerService定义。
-  2.当ClusterManager中的调度器为CoronaJobTracker分配到资源后，采用push机制直接推送给CoronaJobTracker，此时CoronaJobTracker是thrift Server，具体见ClusterManager.thrift中的service SessionDriverService定义。
+  1. CoronaJobTracker需与ClusterManager通信，以申请资源，此时ClusterManager是thrfit Server，具体见ClusterManager.thrift中的service ClusterManagerService定义。
+  2. 当ClusterManager中的调度器为CoronaJobTracker分配到资源后，采用push机制直接推送给CoronaJobTracker，此时CoronaJobTracker是thrift Server，具体见ClusterManager.thrift中的service SessionDriverService定义。
 CoronaJobTracker与CoronaTaskTracker之间的通信机制与MRv1基本一致，在此不赘述。
   3. oop Corona重新实现了JobInProgress（CoronaJobInProgress）和TaskInProgress（CoronaTaskInProgress），但重用了MRv1的Task、MapTask和ReduceTask类。
