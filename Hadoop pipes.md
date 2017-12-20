@@ -4,7 +4,7 @@
 
 * 从很大程度上说，这种方法类似于Hadoop Streaming，不同之处是通信方式不同：
   * 一个是标准输入输出
-  * 另一个socketorg.apache.hadoop.mapred.pipes.Submitter包中有一个public static方法用于提交作业
+  * 另一个socketorg.apache.hadoop.mapred.pipes.Submitter包中有一个public s tatic方法用于提交作业
 该方法将作业封装成一个JobConf对象和一个main方法（接收一个应用程序，可选的配置文件，输入目录和输出目录等），main方法的CLI(Client Line Interface)如下：
 
 
