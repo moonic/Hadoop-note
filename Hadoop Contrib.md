@@ -24,7 +24,7 @@
 
 * Fair Scheduler
   * Facebook贡献的多用户多队列任务调度器，现已被很多公司采用。
-
+ 
 * Streaming
   * Hadoop提供的多语言编写MapReduce作业的工具，通过使用该工具，用户可将任意可执行文件或者脚本作为mapper或者reducer，大大提高了非java程序员开发mapreduce程序的效率。
 
