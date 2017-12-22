@@ -25,7 +25,7 @@ ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift R
 
 ```XML
 <?xml version=”1.0″?>
-<configuration>
+<configuration>  
 <defaultSchedulingMode>FAIR</defaultSchedulingMode>
 <nodeLocalityWaitMAP>0</nodeLocalityWaitMAP>
 <rackLocalityWaitMAP>5000</rackLocalityWaitMAP>
