@@ -21,12 +21,11 @@
 
 * Capacity Scheduler
   * Yahoo贡献的多用户多队列任务调度器，现已被很多公司采用。
-
 * Fair Scheduler
   * Facebook贡献的多用户多队列任务调度器，现已被很多公司采用。
- 
 * Streaming
   * Hadoop提供的多语言编写MapReduce作业的工具，通过使用该工具，用户可将任意可执行文件或者脚本作为mapper或者reducer，大大提高了非java程序员开发mapreduce程序的效率。
+
 
 * Index
   * 利用mapreduce程序分布式并行构建和更新索引文件。Index包将索引划分成若干个shard，每个shard对应一个Lucene实例。在Map阶段，Index程序对输入数据进行格式化、分析和解析，在Reduce阶段，对数据进行聚集、更新等操作。
@@ -37,5 +36,6 @@
 具体可参考：http://www.taobaotest.com/blogs/qa?bid=10550
 
 * Mumak（Hadoop 0.21.0） 
-  * MapReduce模拟器，它可用少量节点模拟一个真实的线上生产环境（包括节点规模、拓扑结构等），它通过分析JobHistory日志还原作业的运行过程。该模拟器由Simulated JobTracker、Simulated Cluster (set of tasktrackers)、Client for handling job-submission等基础组件组成，它允许用户使用已存在的真实调度器，比如FIFO、FairScheduler、Capacity Scheduler等。
+  * MapReduce模拟器，它可用少量节点模拟一个真实的线上生产环境（包括节点规模、拓扑结构等），它通过分析JobHistory日志还原作业的运行过程。
+  * 该模拟器由Simulated JobTracker、Simulated Cluster (set of tasktrackers)、Client for handling job-submission等基础组件组成，它允许用户使用已存在的真实调度器，比如FIFO、FairScheduler、Capacity Scheduler等。
 https://issues.apache.org/jira/browse/MAPREDUCE-728
