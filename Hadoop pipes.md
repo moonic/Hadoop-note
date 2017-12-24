@@ -6,7 +6,7 @@
   * 一个是标准输入输出
   * 另一个socketorg.apache.hadoop.mapred.pipes.Submitter包中有一个public s tatic方法用于提交作业
 该方法将作业封装成一个JobConf对象和一个main方法（接收一个应用程序，可选的配置文件，输入目录和输出目录等），main方法的CLI(Client Line Interface)如下：
-
+```xml
 
 bin/hadoop pipes \
  
@@ -41,8 +41,7 @@ bin/hadoop pipes \
 [-libjars comma separated list of jars] \#要添加到classpath 中的jar包
  
 [-archives comma separated list of archives]#已经上传到HDFS中的jar文件，可以 在程序中直接使用
-
-
+```
 
 ## Hadoop pipes设计架构
 > 用户通过bin/hadoop pipes将作业提交到org.apache.hadoop.mapred.pipes中的Submmit类，它首先会进行作业参数配置（调用函setupPipesJob）
