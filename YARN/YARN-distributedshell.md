@@ -1,11 +1,15 @@
 # YARN编程实例—distributedshell源
-1.    概述
-本文介绍YARN自带的一个非常简单的应用程序编程实例—distributedshell，他可以看做YARN编程中的“hello world”，它的主要功能是并行执行用户提供的shell命令或者shell脚本。本文主要介绍distributedshell 的实现方法。
-Distributedshell的源代码在文件夹
-src\hadoop-yarn-project\hadoop-yarn\hadoop-yarn-applications\hadoop-yarn-applications-distributedshell下。
-Distributedshell 的实现完全与文章“如何编写YARN应用程序”所描述的一般YARN应用程序的编写方法完全一致。
-2.    Distributedshell客户端源码分析
-Distributedshell Client的入口main函数如下：
+1. 概述
+  * 本文介绍YARN自带的一个非常简单的应用程序编程实例—distributedshell，他可以看做YARN编程中的“hello world”，它的主要功能是并行执行用户提供的shell命令或者shell脚本。本文主要介绍distributedshell 的实现方法。
+  * Distributedshell的源代码在文件夹
+  * src\hadoop-yarn-project\hadoop-yarn\hadoop-yarn-applications\hadoop-yarn-applications-distributedshell下。
+  * Distributedshell 的实现完全与文章“如何编写YARN应用程序”所描述的一般YARN应用程序的编写方法完全一致。
+
+
+2. Distributedshell客户端源码分析
+  * Distributedshell Client的入口main函数如下：
+```java
+
 public static void main(String[] args) {
 …
 Client client = new Client();
@@ -16,9 +20,11 @@ System.exit(0);
 result = client.run();
 …
 }
+```
+
 DistributedShell Client中最重要的是函数为run()，该函数实现过程如下：
-（1）构造RPC句柄。
-利用Hadoop RPC接口创建一个可以直接与ResourceManager交互的RPC client句柄applicationsManager：
+1. 构造RPC句柄。
+  * 利用Hadoop RPC接口创建一个可以直接与ResourceManager交互的RPC client句柄applicationsManager：
 private void connectToASM() throws IOException {
 YarnConfiguration yarnConf = new YarnConfiguration(conf);
 InetSocketAddress rmAddress = yarnConf.getSocketAddr(
@@ -29,11 +35,11 @@ LOG.info(“Connecting to ResourceManager at ” + rmAddress);
 applicationsManager = ((ClientRMProtocol) rpc.getProxy(
 ClientRMProtocol.class, rmAddress, conf));
 }
-（2）获取application id。
+2. 获取application id。
 与ResourceManager通信，请求application id：
 GetNewApplicationRequest request = Records.newRecord(GetNewApplicationRequest.class);
 GetNewApplicationResponse response = applicationsManager.getNewApplication(request);
-（3）构造ContainerLaunchContext。
+3. 构造ContainerLaunchContext。
 构造一个用于运行ApplicationMaster的container，container相关信息被封装到ContainerLaunchContext对象中：
 ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
 //添加本地资源
@@ -48,7 +54,7 @@ amContainer.setEnvironment(env);
 amContainer.setCommands(commands);
 //设置ApplicationMaster所需的资源
 amContainer.setResource(capability);
-（4）构造ApplicationSubmissionContext。
+4. 构造ApplicationSubmissionContext。
 构造一个用于提交ApplicationMaster的ApplicationSubmissionContext：
 ApplicationSubmissionContext appContext =
 Records.newRecord(ApplicationSubmissionContext.class);
@@ -64,10 +70,10 @@ pri.setPriority(amPriority);
 appContext.setQueue(amQueue);
 //设置application的所属用户，默认是”"
 appContext.setUser(amUser);
-（5）提交ApplicationMaster。
+5. 提交ApplicationMaster。
 将ApplicationMaster提交到ResourceManager上，从而完成作业提交功能：
 applicationsManager.submitApplication(appRequest);
-（6） 显示应用程序运行状态。
+6.  显示应用程序运行状态。
 为了让用户知道应用程序进度，Client会每隔几秒在shell终端上打印一次应用程序运行状态：
 while (true) {
 Thread.sleep(1000);
