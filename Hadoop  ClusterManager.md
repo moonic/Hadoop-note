@@ -28,7 +28,7 @@ ClusterManager需要与CoronaJobTracker和CoronaTaskTracker通信 通过thrift R
 <configuration>  
 <defaultSchedulingMode>FAIR</defaultSchedulingMode>
 <nodeLocalityWaitMAP>0</nodeLocalityWaitMAP>
-<rackLocalityWaitMAP>5000</rackLocalityWaitMAP>
+<rackLocalityWaitMAP>5000</rackLocalityWaitMAP> 
 <preemptedTaskMaxRunningTime>60000</preemptedTaskMaxRunningTime>
 <shareStarvingRatio>0.9</shareStarvingRatio>
 <starvingTimeForShare>60000</starvingTimeForShare>
