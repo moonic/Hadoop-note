@@ -1,6 +1,6 @@
 # MRV2 NodeManager Container
 
-* NodeManager的一个最重要的功能是根据ApplicationMaster的要求启动container
+* NodeManager的一个最重要的功能是根据ApplicationMaster的要求启动container 
    * 由于各个节点上的container由ResourceManager进行统一管理和分配的
    * 通常，ResourceManager将Container分配给ApplicationMaster，ApplicationMaster再进一步要求对应的NodeManager启动container。为防止ApplicationMaster未经授权随意要求NodeManager启动container，ResourceManager一般会为每个container分配一个令牌（ApplicationMaster无法伪造），而NodeManager启动任何container之前均会对令牌的合法性进行验证，一旦通过验证后，NodeManager才会按照一定的流程启动该container。本章将介绍
 
@@ -16,9 +16,9 @@
   * 使得另外一些对象发生状态转移。
   * 如下如所示，一个时间可以使对象的一个状态转移到另一个状态，也可以转移到多个可能的状态中的一个，具体转移到哪个状态，由行为函数的返回值决定。
 
-NodeManager中包含三个状态机，分别为对象LocalizedResources、Application（由ApplicationImpl实现）和Container（由ContainerImpl实现），具体如下（其中action未画出，这三个图来源为：MAPREDUCE-279）：
-
-
+* NodeManager中包含三个状态机
+  * 对象LocalizedResources、Application（由ApplicationImpl实现）
+  * Container（由ContainerImpl实现），具体如下（其中action未画出，这三个图来源为：MAPREDUCE-279）：
 
 * Container启动过程分析
   * 从源代码级别分析container启动过程，具体如下图所示，读者可对照代码阅读以下流程图。
