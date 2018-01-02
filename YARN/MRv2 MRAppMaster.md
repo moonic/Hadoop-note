@@ -9,7 +9,7 @@
   * 既然MRAppMaster是由JobTracker衍化而来的，那么是否将JobTracker的代码稍加修改，就变成了MRAppMaster呢，答案是否定的。事实上，YARN仅重用了MRv1中的少许代码，基本可看做重写了MRAppMaster。
   * YARN采用了新的软件设计思想，包括对象服务化、事件驱动的异步编程模型的。作为YARN的一部分，MRAppMaster的实现也采用了这些设计思想。
 
-
+ 
 * MRAppMaster的实现细节。
   * 在正式介绍MRAppMaster之前，我们先回顾一下MRv1的实现。我们都知道，MRv1主要由两种服务组成，即：JobTracker和TaskTracker，而在YARN中，TaskTracker已经由NodeManager代替，因此，我们在此重点分析JobTracker。JobTracker包含资源管理和作业控制两个功能，在YARN中，作业管理由ResourceManager实现，因此，只剩下作业控制这一个功能（由MRAppMaster实现）。MRv1中每个作业由一个JobInProgress控制，每个任务由一个TaskInProgress控制，由于每个任务可能有多个运行实例，因此，TaskInProgress实际管理了多个运行实例Task Attempt，对于每个运行实例，可能运行了一个MapTask或者ReduceTask，另外，每个Map Task或者Reduce Task会通过RPC协议将状态汇报给TaskTracker，再由TaskTracker进一步汇报给JobTracker。
   * 在MRAppMaster中，它只负责管理一个作业，包括该作业的资源申请、作业运行过程监控和作业容错等。
@@ -32,7 +32,7 @@
 * Task
   * 表示一个MapReduce作业中的某个任务，与MRv1中的TaskInProgress功能类似，负责监控一个任务的运行状态。它为花了一个任务状态机，以实现异步控制各种任务操作。
 * TaskAttempt
-  * 表示一个任务运行实例，同MRv1中的概念一样。
+  * 表示一个任务运行实例，同MRv1中的概念一样。 
 * TaskCleaner
   * 清理失败任务或者被杀死任务产生的结果，它维护了一个线程池，异步删除这些任务产生的结果。
 * Speculator
