@@ -77,47 +77,6 @@ Recovery
 在正式讲解作业生命周期之前，先要了解MRAppMaster中作业表示方式，每个作业由若干干Map Task和Reduce Task组成，每个Task进一步由若干个TaskAttempt组成，Job、Task和TaskAttempt的生命周期均由一个状态机表示，具体可参考https://issues.apache.org/jira/browse/MAPREDUCE-279（附件中的图yarn-state-machine.job.png，yarn-state-machine.task.png和yarn-state-machine.task-attempt.png）
 
 作业的创建入口在MRAppMaster类中，如下所示：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
 public class MRAppMaster extends CompositeService {
  
   public void start() {
@@ -162,19 +121,7 @@ protected Job createJob(Configuration conf) {
 （1）作业/任务初始化
 JobImpl会接收到.JOB_INIT事件，然后触发作业状态从NEW变为INITED，并触发函数InitTransition()，该函数会创建MapTask和
 ReduceTask，代码如下：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
+
 public static class InitTransition
  
   implements MultipleArcTransition&lt;JobImpl, JobEvent, JobState&gt; {
@@ -189,37 +136,7 @@ public static class InitTransition
  
 }
 其中，createMapTasks函数实现如下：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
+
 private void createMapTasks(JobImpl job, long inputLength,
  
   TaskSplitMetaInfo[] splits) {
@@ -252,17 +169,6 @@ job.addTask(task);
  
 }
 （2）作业启动
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
 public class MRAppMaster extends CompositeService {
  
 protected void startJobs() {
@@ -275,19 +181,6 @@ dispatcher.getEventHandler().handle(startJobEvent);
  
 }
 JobImpl会接收到.JOB_START事件，会触发作业状态从INITED变为RUNNING，并触发函数StartTransition()，进而触发Map Task和Reduce Task开始调度:
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
 public static class StartTransition
  
 implements SingleArcTransition&amp;lt;JobImpl, JobEvent&amp;gt; {
