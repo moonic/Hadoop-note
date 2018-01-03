@@ -69,3 +69,27 @@ GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request)
 * 在YARN中，NodeManager主要用于管理抽象的container
   * 它只处理container相关的事情，而不必关心每个应用程序（如MapReduce Task）自身的状态管理
   * 不再有类似于map slot和reduce slot的slot概念，正是由于上述各个模块间清晰的责任分离，NM可以很容易的扩展，且它的代码也更容易维护。
+
+##  MRv2 Node Manager—Application状态机分析
+
+* Application是NodeManager中用于维护一个Application生命周期的数据结构，它的实现是ApplicationImpl，该类维护了一个Application状态机，记录了Application可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，ApplicationImpl会根据实际情况进行节点状态转移，同时触发一个行为。
+
+如图所示，在NM看来，每个节点有5种基本状态（ApplicationState）和8种导致这5种状态之间发生转移的事件（ApplicationEventType），ApplicationImpl的作用是等待接收其他对象发出的ApplicationEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
+基本事件
+（1） INIT_APPLICATION
+NodeManager收到来自某个Application的第一个container，则会触发一个INIT_APPLICATION事件，同时使Application状态由初始状态NEW转换为INITING。
+（2）FINISH_APPLICATION
+NodeManager通过心跳机制收到ResourceManager发送的待清理的Application列表后，会为这些application发送一个FINISH_APPLICATION事件。
+（3）APPLICATION_CONTAINER_FINISHED
+该Application的一个container退出（可能运行失败，也可能运行成功。）
+（4）APPLICATION_INITED
+Application本地化完成（在每个NodeManager上，对于同一个Application，由第一个container负责Application级别的本地化工作，后续的container只需负责自己的本地化工作。本地化涉及到的主要工作是准备执行环境，包括准备各种jar包，二进制文件，外部文件等。）
+（5）APPLICATION_RESOURCES_CLEANEDUP
+NodeManager清理Application占用的临时目录，该过程与Application本地化是一对逆过程。
+（6）INIT_CONTAINER
+NodeManager收到一个ApplicationMaster启动container的请求（通过RPC函数ContainerManager.startContainer()）后，会触发一个INIT_CONTAINER事件。
+（7）APPLICATION_LOG_HANDLING_INITED
+Application触发INIT_APPLICATION事件的同时，会执行一个函数，该函数会进一步触发APPLICATION_LOG_HANDLING_INITED事件。
+（8）APPLICATION_LOG_HANDLING_FINISHED
+Application运行完成，资源得到回收后，会触发一个APPLICATION_LOG_HANDLING_FINISHED事件，销毁log句柄。
+下图描述了以上各个事件的来源：
