@@ -72,7 +72,8 @@ GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request)
 
 ##  MRv2 Node Manager—Application状态机分析
 
-* Application是NodeManager中用于维护一个Application生命周期的数据结构，它的实现是ApplicationImpl，该类维护了一个Application状态机，记录了Application可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，ApplicationImpl会根据实际情况进行节点状态转移，同时触发一个行为。
+* Application是NodeManager中用于维护一个Application生命周期的数据结构
+* 它的实现是ApplicationImpl，该类维护了一个Application状态机，记录了Application可能存在的各个状态以及导致状态间转换的事件，当某个事件发时，ApplicationImpl会根据实际情况进行节点状态转移，同时触发一个行为。
 
 如图所示，在NM看来，每个节点有5种基本状态（ApplicationState）和8种导致这5种状态之间发生转移的事件（ApplicationEventType），ApplicationImpl的作用是等待接收其他对象发出的ApplicationEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
 基本事件
