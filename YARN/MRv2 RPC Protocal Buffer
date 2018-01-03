@@ -1,0 +1,113 @@
+# MRv2 Protocal Buffer 
+Hadoop2.0中已经将Protocol buffer（以面简称PB ，http://code.google.com/p/protobuf/ ）作为默认的序列化/反序列化框架，原来的自己实现的基于Writable的方式已经被淘汰了。来自Cloudera的Aaron T. Myers在邮件中这样说的“since PB can provide support for evolving protocols in a compatible fashion”，本文将尝试以实例的形式解释Aaron T. Myers这句话的含义，即引入PB的好处。
+PB是Google开源的一种轻量级的结构化数据存储格式，可以用于结构化数据的序列化/反序列化，很适合做数据存储或 RPC 数据交换格式。它可用于通讯协议、数据存储等领域的语言无关、平台无关、可扩展的序列化结构数据格式。目前提供了 C++、Java、Python 三种语言的 API。简单理解，它的作用就是一个进程把一些结构化数据通过网络通信的形式传递给另外一个进程（进程间通信）；或者某个进程要把某些结构化数据持久化存储到磁盘上（存储格式）。优点是序列化/反序列化速度快，网络或者磁盘IO传输的数据少，支持向后兼容，这在可扩展地数据密集型应用中是非常重要的。
+通常而言，一个完整的RPC框架由两部分组成：序列化/反序列化和RPC实现。对于Protocal Buffer而言，它仅包含序列化/反序列化功能，未提供RPC函数相关机制，这一部分需要由用户自己实现，而对应到YARN的设计中，则可以概括为：PB仅代替了Hadoop原来那套自己实现的序列化/反序列化机制（Writable接口和Comparable接口以及实现），而进程间的RPC通信机制仍由YARN自己实现。谈到PB，很多人就会想到Facebook开源的Thrift（http://thrift.apache.org/），与PB相比，Thrift同时提供了序列化/反序列化和RPC实现，但仅从序列化/反序列化方面比较，PB性能要比Thrift好很多。由于Doug Cutting从Hadoop设计之初就强调不会引入一个不可控的核心模块，这意味着，Hadoop不会引入一个不可控的RPC实现，因此，选择了PB而未选择Thrift。
+YARN之所以在引入Protocal buffer，最直接的原因是提高Hadoop的向后兼容性，即不同版本的Client、ResourceManager、NodeManager和ApplicationMaster之间通信。在Hadoop 1.0中，如果新版本的通信接口参数定义被修改了，则无法与旧版本进行通信。下面举例进行说明。在YARN中，Client与ResourceManager之间的通信协议是ClientRMProtocol，该协议中有一个RPC函数为：
+public SubmitApplicationResponse submitApplication(
+SubmitApplicationRequest request)
+一看名字大家就能猜到，该函数用于Client向RM提交一个应用程序，其中参数SubmitApplicationRequest中的ApplicationSubmissionContext字段描述了应用程序的一些属性，主要包括以下几个方面：
+（1）       application_id  //application ID
+（2）       application_name //application
+（3）       user //application owner
+（4）       queue//queue that application submits to
+（5）       priority  //application priority
+（6）       am_container_spec //AM所需资源描述
+（7）       cancel_tokens_when_complete
+（8）       unmanaged_am
+如果采用Java，ApplicationSubmissionContext定义可能如下：
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+public class SubmitApplicationRequest implements Writable {
+ 
+  private ApplicationId application_id;
+ 
+  private String application_name;
+ 
+  private String user;
+ 
+  private String queue;
+ 
+  private Priority priority;
+ 
+  private ContainerLaunchContext am_container_spec;
+ 
+  private bool cancel_tokens_when_complete;
+ 
+  private bool unmanaged_am;
+ 
+  ……
+ 
+  @Override
+ 
+  public void readFields(DataInput in) throws IOException {
+ 
+    ……
+ 
+  }
+ 
+  @Override
+ 
+  public void writeFields(DataInput in) throws IOException {
+ 
+    ……
+ 
+  }
+ 
+}
+如果在一个新的YARN版本中，需要在ApplicationSubmissionContext中添加一个新的属性，比如deadline（期望应用程序在deadline时间内运行完成），则所有旧的Client将无法与升级后的ResourceManager通信，原因是接口不兼容，即客户端发送的ApplicationSubmissionContext请求包中多出了deadline字段导致ResourceManager无法对其进行反序列化。这意味着所有客户端必须升级，不然无法使用。这是客户端与ResourceManager之间的一个例子，同样，对于NodeManager与ResourceManager，ApplicationMaster与ResourceManager，ApplicationMaster与NodeManager之间的通信也是类似的，一旦一端修改了通信协议内容（RPC函数名不能改），则另外一端必须跟着改，不然对方与之通信（反序列化失败），这可能导致a.b.0版本的NodeManager，无法与a.b.a版本的ResourceManager通信。
+为了解决该问题，可使用Protocal Buffer，在PB中，可以采用如下的规范定义ApplicationSubmissionContext：
+message ApplicationSubmissionContextProto {
+optional ApplicationIdProto application_id = 1;
+optional string application_name = 2 [default = "N/A"];
+optional string user = 3;
+optional string queue = 4 [default = "default"];
+optional PriorityProto priority = 5;
+optional ContainerLaunchContextProto am_container_spec = 6;
+optional bool cancel_tokens_when_complete = 7 [default = true];
+optional bool unmanaged_am = 8 [default = false];
+}
+当需要增加一个新的deadline字段时，可直接在最后面添加一个optional字段即可，即：
+message ApplicationSubmissionContextProto {
+……
+optional bool cancel_tokens_when_complete = 7 [default = true];
+optional bool unmanaged_am = 8 [default = false];
+optional int deadline=9[default=-1];
+}
+在Protocal Buffer中，optional字段是可有可无的，你不仅可以加上一个新的optional字段，也可以删除一个旧的optional字段，Protocal Buffer可以自动实现向后兼容。
+经过这样修改后，旧的客户端无需升级，ResourceManager仍能反序列化成功。原理可简单解释为：由于旧的客户端请求中没有deadline这一字段，ResourceManager端进行反序列化时会跳过该字段，直接赋予该值为默认值-1。
+至此，本文已经解释了引入Protocal Buffer的一个最大好处—满足向后兼容性，在后面几章中，我将详细介绍Protocal Buffer在YARN中的应用。
