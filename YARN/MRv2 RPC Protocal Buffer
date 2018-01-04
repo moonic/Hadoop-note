@@ -1,8 +1,12 @@
 # MRv2 Protocal Buffer 
-Hadoop2.0中已经将Protocol buffer（以面简称PB ，http://code.google.com/p/protobuf/ ）作为默认的序列化/反序列化框架，原来的自己实现的基于Writable的方式已经被淘汰了。来自Cloudera的Aaron T. Myers在邮件中这样说的“since PB can provide support for evolving protocols in a compatible fashion”，本文将尝试以实例的形式解释Aaron T. Myers这句话的含义，即引入PB的好处。
-PB是Google开源的一种轻量级的结构化数据存储格式，可以用于结构化数据的序列化/反序列化，很适合做数据存储或 RPC 数据交换格式。它可用于通讯协议、数据存储等领域的语言无关、平台无关、可扩展的序列化结构数据格式。目前提供了 C++、Java、Python 三种语言的 API。简单理解，它的作用就是一个进程把一些结构化数据通过网络通信的形式传递给另外一个进程（进程间通信）；或者某个进程要把某些结构化数据持久化存储到磁盘上（存储格式）。优点是序列化/反序列化速度快，网络或者磁盘IO传输的数据少，支持向后兼容，这在可扩展地数据密集型应用中是非常重要的。
+
+* Protocal Buffer 
+  * Hadoop2.0中已经将Protocol buffer（以面简称PB ，http://code.google.com/p/protobuf/ ）作为默认的序列化/反序列化框架
+  * 原来的自己实现的基于Writable的方式已经被淘汰了。来自Cloudera的Aaron T. Myers在邮件中这样说的“since PB can provide support for evolving protocols in a compatible fashion”，本文将尝试以实例的形式解释Aaron T. Myers这句话的含义，即引入PB的好处。
+PB是Google开源的一种轻量级的结构化数据存储格式，可以用于结构化数据的序列化/反序列化，很适合做数据存储或 RPC 数据交换格式。
+  * 可用于通讯协议、数据存储等领域的语言无关、平台无关、可扩展的序列化结构数据格式。目前提供了 C++、Java、Python 三种语言的 API。简单理解，它的作用就是一个进程把一些结构化数据通过网络通信的形式传递给另外一个进程（进程间通信）；或者某个进程要把某些结构化数据持久化存储到磁盘上（存储格式）。优点是序列化/反序列化速度快，网络或者磁盘IO传输的数据少，支持向后兼容，这在可扩展地数据密集型应用中是非常重要的。
 通常而言，一个完整的RPC框架由两部分组成：序列化/反序列化和RPC实现。对于Protocal Buffer而言，它仅包含序列化/反序列化功能，未提供RPC函数相关机制，这一部分需要由用户自己实现，而对应到YARN的设计中，则可以概括为：PB仅代替了Hadoop原来那套自己实现的序列化/反序列化机制（Writable接口和Comparable接口以及实现），而进程间的RPC通信机制仍由YARN自己实现。谈到PB，很多人就会想到Facebook开源的Thrift（http://thrift.apache.org/），与PB相比，Thrift同时提供了序列化/反序列化和RPC实现，但仅从序列化/反序列化方面比较，PB性能要比Thrift好很多。由于Doug Cutting从Hadoop设计之初就强调不会引入一个不可控的核心模块，这意味着，Hadoop不会引入一个不可控的RPC实现，因此，选择了PB而未选择Thrift。
-YARN之所以在引入Protocal buffer，最直接的原因是提高Hadoop的向后兼容性，即不同版本的Client、ResourceManager、NodeManager和ApplicationMaster之间通信。在Hadoop 1.0中，如果新版本的通信接口参数定义被修改了，则无法与旧版本进行通信。下面举例进行说明。在YARN中，Client与ResourceManager之间的通信协议是ClientRMProtocol，该协议中有一个RPC函数为：
+  * YARN之所以在引入Protocal buffer，最直接的原因是提高Hadoop的向后兼容性，即不同版本的Client、ResourceManager、NodeManager和ApplicationMaster之间通信。在Hadoop 1.0中，如果新版本的通信接口参数定义被修改了，则无法与旧版本进行通信。下面举例进行说明。在YARN中，Client与ResourceManager之间的通信协议是ClientRMProtocol，该协议中有一个RPC函数为：
 public SubmitApplicationResponse submitApplication(
 SubmitApplicationRequest request)
 一看名字大家就能猜到，该函数用于Client向RM提交一个应用程序，其中参数SubmitApplicationRequest中的ApplicationSubmissionContext字段描述了应用程序的一些属性，主要包括以下几个方面：
