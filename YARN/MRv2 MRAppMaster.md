@@ -204,3 +204,4 @@ job.scheduleTasks(job.reduceTasks);
 3）  fail task attempt
 4）  container failed
 5）  lose node
+ 
