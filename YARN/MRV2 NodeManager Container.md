@@ -13,13 +13,14 @@
 * 事件驱动与状态机
   * YARN中采用了事件驱动模型，YARN按照事件将各个对象组织起来，如果一个对象存在多种状态，则用一个状态机描述它的生命周期
   * 其中，状态机的状态变化是由事件驱动的，一个事件可以使对象从一个状态转移到另一个状态，同时触发一个行为，而该行为可能在此发出一个事件
-  * 使得另外一些对象发生状态转移。
+  * 使得另外一些对象发生状态转移。 
   * 如下如所示，一个时间可以使对象的一个状态转移到另一个状态，也可以转移到多个可能的状态中的一个，具体转移到哪个状态，由行为函数的返回值决定。
 
 * NodeManager中包含三个状态机
   * 对象LocalizedResources、Application（由ApplicationImpl实现）
   * Container（由ContainerImpl实现），具体如下（其中action未画出，这三个图来源为：MAPREDUCE-279）：
-
+ 
 * Container启动过程分析
   * 从源代码级别分析container启动过程，具体如下图所示，读者可对照代码阅读以下流程图。
 Container的启动开始于ApplicationMaster调用ContainerManager::startContainer()，而NodeManager中的ContainerManagerImpl收到该RPC请求后，经历的整个过程如下所示：
+ 
