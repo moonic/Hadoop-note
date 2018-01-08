@@ -1,4 +1,37 @@
-# MRv2 ResourceManager Code
+# MRv2 ResourceManager
+> 在YARN中，资源调度器（ResourceScheduler）是一个非常核心的部件，它负责将各个节点上的资源封装成container，并按照一定的约束条件（按队列分配，每个队列有一定的资源分配上限等）分配给各个application。
+
+* 分析基于hadoop-2.0.3-alpha）
+YARN的资源管理器实际上是一个事件处理器，它需要处理来自外部的6种SchedulerEvent类型的事件，并根据事件的具体含义进行相应的处理。这6种事件含义如下：
+（1）  NODE_REMOVED
+事件NODE_REMOVED表示集群中被移除一个计算节点（可能是节点故障或者管理员主动移除），资源调度器收到该事件时需要从可分配资源总量中移除相应的资源量。
+（2） NODE_ADDED
+事件NODE_ADDED表示集群中增加了一个计算节点，资源调度器收到该事件时需要将新增的资源量添加到可分配资源总量中。
+（3）APPLICATION_ADDED
+事件APPLICATION_ADDED 表示ResourceManager收到一个新的Application。通常而言，资源管理器需要为每个application维护一个独立的数据结构，以便于统一管理和资源分配。资源管理器需将该Application添加到相应的数据结构中。
+（4）APPLICATION_REMOVED
+事件APPLICATION_REMOVED表示一个Application运行结束（可能成功或者失败），资源管理器需将该Application从相应的数据结构中清除。
+（5） CONTAINER_EXPIRED
+当资源调度器将一个container分配给某个ApplicationMaster后，如果该ApplicationMaster在一定时间间隔内没有使用该container，则资源调度器会对该container进行再分配。
+（6）NODE_UPDATE
+NodeManager通过心跳机制向ResourceManager汇报各个container运行情况，会触发一个NODE_UDDATE事件，由于此时可能有新的container得到释放，因此该事件会触发资源分配，也就是说，该事件是6个事件中最重要的事件，它会触发资源调度器最核心的资源分配机制。
+
+资源表示模型
+当前YARN支持内存和CPU两种资源类型的管理和分配。当NodeManager启动时，会向ResourceManager注册，而注册信息中会包含该节点可分配的CPU和内存总量，这两个值均可通过配置选项设置，具体如下：
+（1）yarn.nodemanager.resource.memory-mb
+可分配的物理内存总量，默认是8*1024MB。
+（2）yarn.nodemanager.vmem-pmem-ratio
+每单位的物理内存总量对应的虚拟内存量，默认是2.1，表示每使用1MB的物理内存，最多可以使用2.1MB的虚拟内存总量。
+（3）yarn.nodemanager.resource.cpu-core（默认是8）
+可分配的CPU总个数，默认是8
+（4）yarn.nodemanager.vcores-pcores-ratio
+为了更细粒度的划分CPU资源，YARN将每个物理CPU划分成若干个虚拟CPU，默认值为2。用户提交应用程序时，可以指定每个任务需要的虚拟CPU个数。在MRAppMaster中，每个Map Task和Reduce Task默认情况下需要的虚拟CPU个数为1，用户可分别通过mapreduce.map.cpu.vcores和mapreduce.reduce.cpu.vcores进行修改（对于内存资源，Map Task和Reduce Task默认情况下需要1024MB，用户可分别通过mapreduce.map.memory.mb和mapreduce.reduce.memory.mb修改）。
+（在最新版本2.1.0-beta中，yarn.nodemanager.resource.cpu-core和yarn.nodemanager.vcores-pcores-ratio两个参数被遗弃，引入一个新参数yarn.nodemanager.resource.cpu-vcore，表示虚拟CPU个数，具体请阅读YARN-782）
+YARN对内存资源和CPU资源采用了不同的资源隔离方案。对于内存资源，为了能够更灵活的控制内存使用量，YARN采用了进程监控的方案控制内存使用，即每个NodeManager会启动一个额外监控线程监控每个container内存资源使用量，一旦发现它超过约定的资源量，则会将其杀死。采用这种机制的另一个原因是Java中创建子进程采用了fork()+exec()的方案，子进程启动瞬间，它使用的内存量与父进程一致，从外面看来，一个进程使用内存量可能瞬间翻倍，然后又降下来，采用线程监控的方法可防止这种情况下导致swap操作。对于CPU资源，则采用了Cgroups进行资源隔离。具体可参考YARN-3。
+资源分配模型
+在YARN中，用户以队列的形式组织，每个用户可属于一个或多个队列，且只能向这些队列中提交application。每个队列被划分了一定比例的资源。
+YARN的资源分配过程是异步的，也就是说，资源调度器将资源分配给一个application后，不会立刻push给对应的ApplicaitonMaster，而是暂时放到一个缓冲区中，等待ApplicationMaster通过周期性的RPC函数主动来取，也就是说，采用了pull-based模型，而不是push-based模型，这个与MRv1是一致的。
+
 
 ##   涉及到的状态机
   1. RMApp：每个application对应一个RMApp对象，保存该application的各种信息。
