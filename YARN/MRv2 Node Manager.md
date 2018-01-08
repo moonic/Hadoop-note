@@ -134,3 +134,16 @@ Container异常退出（运行过程中抛出Throwable异常）
 Container运行过程中被强制杀死或者终止（返回码为137或者143）。
 （10）UPDATE_DIAGNOSTICS_MSG
 执行ContainerExecutor. launchContainer()过程中抛出IOException异常（ContainerExecutor有两种实现，默认是DefaultContainerExecutor，另一种是LinuxContainerExecutor）。
+
+
+## LocalizedResource状态机分析
+LocalizedResource是NodeManager中用于维护一种”资源”生命周期的数据结构，它维护了一个状态机，记录了“资源”可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，LocalizedResource会根据实际情况进行节点状态转移，同时触发一个行为。
+
+如图所示，在NM看来，每个节点有3种基本状态（ResourceState）和3种导致这3种状态之间发生转移的事件（ResourceEventType），LocalizedResource的作用是等待接收其他对象发出的ResourceEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
+基本事件
+（1）REQUEST
+当需要为container下载某种资源时（比如jar包或者字典文件，这些文件一般位于HDFS上，需要在container执行前下载到本地），会发出一个REQUEST事件。
+（2）LOCALIZED
+一种资源下载成功后，会触发一个LOCALIZED事件。
+（3）RELEASE
+当Container执行完成（可能成功或者失败）后，会触发一个RELEASE事件，已清理各种存放在本地的资源。
