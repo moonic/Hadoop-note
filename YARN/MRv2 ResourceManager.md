@@ -33,6 +33,16 @@ YARN对内存资源和CPU资源采用了不同的资源隔离方案。对于内�
 YARN的资源分配过程是异步的
   * 也就是说，资源调度器将资源分配给一个application后，不会立刻push给对应的ApplicaitonMaster，而是暂时放到一个缓冲区中，等待ApplicationMaster通过周期性的RPC函数主动来取，也就是说，采用了pull-based模型，而不是push-based模型，这个与MRv1是一致的。
 
+## NM管理 
+NodeManager管理部分主要由三个服务构成，分别是NMLivelinessMonitor、NodesListManager和ResourceTrackerService，它们共同管理NodeManager的生存周期，接下来我们依次介绍这三个服务。
+NMLivelinessMonitor
+该服务周期性遍历所有NodeManager，如果一个NodeManager在一定时间（可通过参数yarn.nm.liveness-monitor.expiry-interval-ms配置，默认为10min）内未汇报心跳信息，则认为它死掉了，它上面所有正在运行的Container将被置为运行失败（RM不会重新执行这些Container，它只会通过心跳机制告诉对应的AM，由AM决定是否重新执行，如果需要，则AM重新向RM申请资源）。
+NodesListManager
+NodesListManager维护正常节点和异常节点列表，它管理exlude（类似于黑名单）和inlude（类似于白名单）节点列表，这两个列表所在的文件分别可通过yarn.resourcemanager.nodes.include-path和yarn.resourcemanager.nodes.exclude-path配置（每个节点host占一行），其中，exlude节点是排外节点，它们无法与RM取得连接（直接在RPC层抛出异常，导致NM死掉），默认情况下，这两个列表均为空，表示任何节点均可接入RM。最重要的一点是，这两个文件均可以动态加载。
+ResourceTrackerService
+ResourceTrackerService负责处理来自各个NodeManager的请求，主要包括两种请求：注册和心跳，其中，注册是NodeManager启动时发生的行为，请求包中包含节点ID，可用的资源上限等信息，而心跳是周期性 行为，包含各个Container运行状态，运行的Application列表、节点健康状况（可通过一个脚本设置），而ResourceTrackerService则为NM返回待释放的Container列表、Application列表等。
+当一个NM启动时，他所做的第一件事是向RM注册，这是通过RPC函数ResourceTracker.registerNodeManager()实现的。
+NM启动时候，它会周期性的通过RPC函数ResourceTracker. nodeHeartbeat ()汇报心跳，具体包含各个Container运行状态、运行的Application列表、节点健康状况等信息，而RM则位置返回需要释放的Container列表，Application列表等。
 
 ## RMNode 状态分析
 > RMNode是ResourceManager中用于维护一个节点生命周期的数据结构，它的实现是RMNodeImpl，该类维护了一个节点状态机，记录了节点可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，RMNodeImpl会根据实际情况进行节点状态转移，同时触发一个行为。
