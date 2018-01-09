@@ -4,7 +4,7 @@
   * MRv1中，JobTracker存在诸多问题，包括存在单点故障，扩展受限等，为了解决这些问题，Apache对MRv1进行了改进，提出了YARN，YARN将JobTracker中的作业控制和资源管理两个功能分开，分别由两个不同的进程处理，进而解决了原有JobTracker存在的问题。经过架构调整之后
   * YARN已经完全不同于MRv1，它已经变成了一个资源管理平台，或者说应用程序管理框架。运行于YARN之上的计算框架不只限于MapReduce一种，也可以是其他流行计算框架，比如流式计算、迭代式计算等类型的计算框架。
   * 为了将一个计算框架运行于YARN之上，用户需要开发一个组件—ApplicationMaster。作为一个开始，YARN首先支持的计算框架是MapReduce，YARN为用户实现好了MapReduce的ApplicationMaster，也就是本文要介绍了MRAppMaster。
-
+  
 2. 相比于JobTracker，MRAppMaster有什么不同？
   * 既然MRAppMaster是由JobTracker衍化而来的，那么是否将JobTracker的代码稍加修改，就变成了MRAppMaster呢，答案是否定的。事实上，YARN仅重用了MRv1中的少许代码，基本可看做重写了MRAppMaster。
   * YARN采用了新的软件设计思想，包括对象服务化、事件驱动的异步编程模型的。作为YARN的一部分，MRAppMaster的实现也采用了这些设计思想。
