@@ -19,9 +19,9 @@
 * （注意，ContainerManager实际上是个接口，真正的实现是ContainerManagerImpl类）
 
 1. RPC Server ContainerManager从各个Application Master上接收RPC请求以启动Container或者停止正在运行的Container。它与ContainerTokenSecretManager（下面将介绍）合作，以对所有请求进行合法性验证。所有作用在正运行Container的操作均会被写入audit-log，以便让安全工具进行后续处理。
-注：这里的“RPC Server”实际上是RPC协议ContainerManager的server，AM可通过该协议通知某个节点启动或者释放container，ContainerManager定义了三个接口供AM使用：
+注：这里的“RPC Server”实际上是RPC协议ContainerManager的server，AM可通过该协议通知某个节点启动或者释放container，ContainerManager定义了三个接口供AM使用：  
 
-StartContainerResponse startContainer(StartContainerRequest request); //启动container
+StartContainerResponse startContainer(StartContainerRequest request); //启动container   
 StopContainerResponse stopContainer(StopContainerRequest request); //释放container
 GetContainerStatusResponse getContainerStatus(GetContainerStatusRequest request);//获取container列表。
 
