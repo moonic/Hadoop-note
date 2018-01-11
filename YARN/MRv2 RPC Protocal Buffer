@@ -19,6 +19,8 @@ SubmitApplicationRequest request)
 （7）       cancel_tokens_when_complete
 （8）       unmanaged_am
 如果采用Java，ApplicationSubmissionContext定义可能如下：
+
+```java
 public class SubmitApplicationRequest implements Writable {
  
   private ApplicationId application_id;
@@ -56,6 +58,8 @@ public class SubmitApplicationRequest implements Writable {
   }
  
 }
+```
+
 如果在一个新的YARN版本中，需要在ApplicationSubmissionContext中添加一个新的属性，比如deadline（期望应用程序在deadline时间内运行完成），则所有旧的Client将无法与升级后的ResourceManager通信，原因是接口不兼容，即客户端发送的ApplicationSubmissionContext请求包中多出了deadline字段导致ResourceManager无法对其进行反序列化。这意味着所有客户端必须升级，不然无法使用。这是客户端与ResourceManager之间的一个例子，同样，对于NodeManager与ResourceManager，ApplicationMaster与ResourceManager，ApplicationMaster与NodeManager之间的通信也是类似的，一旦一端修改了通信协议内容（RPC函数名不能改），则另外一端必须跟着改，不然对方与之通信（反序列化失败），这可能导致a.b.0版本的NodeManager，无法与a.b.a版本的ResourceManager通信。
 为了解决该问题，可使用Protocal Buffer，在PB中，可以采用如下的规范定义ApplicationSubmissionContext：
 message ApplicationSubmissionContextProto {
