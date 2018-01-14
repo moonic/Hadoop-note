@@ -32,4 +32,4 @@ Standalone model
 		Master-Worker 机器配置在slaves文件中
 	HDFS 中的数据
 	Standalone 运行的参数 driver失败后会重启
-	total -executor-cores num 的总核数
+	total -executor-cores num 的总核数 
