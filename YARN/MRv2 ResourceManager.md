@@ -161,6 +161,6 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
   * ApplicationMasterService收到新的ApplicationMaster注册请求后，会触发RMAppAttemptRegistrationEvent（RMAppAttemptEventType.REGISTERED）事件。
   * RMAppAttemptRegistrationEvent事件被 ApplicationAttemptEventDispatcher捕获，并将RMAppAttempt对象从RMAppAttemptState.LAUNCHED状态转化为RMAppAttemptState.RUNNING状态，同时触发RMAppEventType.ATTEMPT_REGISTERED事件。
   * 至此，该application的ApplicationMaster创建与注册完毕，接下来ApplicationMaster会根据Application的资源需求向ResourceManager请求资源，同时监控各个子任务的执行情况。
-
+ 
 4.    ResourceManager中事件处理流直观图
 下图是从另一个方面对上图的重新绘制：
