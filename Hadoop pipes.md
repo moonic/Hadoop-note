@@ -1,7 +1,7 @@
 # Hadoop pipes
 > 允许用户使用C++语言进行MapReduce程序设计。它采用的主要方法是将应用逻辑相关的C++代码放在单独的进程中
 然后通过Socket让Java代码与C++代码通信。
-
+    
 * 从很大程度上说，这种方法类似于Hadoop Streaming，不同之处是通信方式不同：
   * 一个是标准输入输出
   * 另一个socketorg.apache.hadoop.mapred.pipes.Submitter包中有一个public s tatic方法用于提交作业
