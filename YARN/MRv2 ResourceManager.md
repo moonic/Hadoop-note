@@ -130,7 +130,7 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
 1. jar包：org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt
 2.  关键类与关键函数：RMAppAttemptImpl.AttemptStartedTransition
 
-### ResourceScheduler
+##  ResourceScheduler
 * （如FifoScheduler）捕获AppAddedSchedulerEvent事件，并创建SchedulerApp对象，使RMAppAttempt对像从RMAppAttemptState.SUBMITTED转化为RMAppAttemptState.SCHEDULED状态，同时产生RMAppAttemptEventType.APP_ACCEPTED事件。
 *  jar包：org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo
 *  关键类与关键函数：FifoScheduler.addApplication
@@ -166,48 +166,37 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
 下图是从另一个方面对上图的重新绘制：
 
 
-## RMApp状态机分析
-RMApp是ResourceManager中用于维护一个Application生命周期的数据结构，它的实现是RMAppImpl，该类维护了一个Application状态机，记录了一个Application可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，RMAppImpl会根据实际情况进行Application状态转移，同时触发一个行为。
+## RMAppAttempt 状态机分析
+RMAppAttempt是ResourceManager中用于维护一个Application Attempt生命周期的数据结构，它的实现是RMAppAttemptImpl，该类维护了一个Application Attempt状态机，记录了一个Application Attempt可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，RMAppAttemptImpl会根据实际情况进行Application Attempt状态转移，同时触发一个行为。
 需要说明的是，在YARN中，每个application用数据结构RMApp表示，每个application可能会尝试运行多次，则每次运行尝试的整个运行过程用数据结构RMAppAttempt表示，如果一次运行尝试运行失败，则RMApp会创建另外一个运行尝试，直到某次运行尝试运行成功或者达到运行尝试运行上限。
 
-如图所示，在RM看来，每个Application有8种基本状态（RMAppState）和10种导致这8种状态之间发生转移的事件（RMAppEventType），RMAppImpl的作用是等待接收其他对象发出的RMAppEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
+如图所示，在RM看来，每个Application Attempt有13种基本状态（RMAppAttemptState）和15种导致这13种状态之间发生转移的事件（RMAppAttemptEventType），RMAppAttemptImpl的作用是等待接收其他对象发出的RMAppAttemptEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
 基本状态
 （1） NEW
 状态机初始状态，每个Application对应一个状态机，而每个状态机的初始状态为NEW。
-（2） SUBMITTED
-客户端通过RPC函数ClientRMProtocol.submitApplication向RM提交一个Application，通过合法性验证后，RM会将Application状态置为SUBMITTED。
-（3） ACCEPTED
-RM创建一个ApplicationMaster Attempt，此时Application状态被置为ACCEPTED。
-（4）RUNNING
-RM创建的一个ApplicationMaster Attempt在某个节点上开始运行，此时Application状态被置为RUNNING。
-（5） FAILED
-Application的ApplictionMaster运行失败，导致Application的状态被置为FAILED。
-（6） KILLED
-Application收到KILL事件，将被置为KILLED。
-（7）FINISHING
+（2）SUBMITTED
+客户端通过RPC函数ClientRMProtocol.submitApplication向RM提交一个Application，通过合法性验证后，RM会将Application Attempt状态置为SUBMITTED。
+（3）SCHEDULED
+客户端提交Appliation后，ResourceManager通知ResouceScheduler，ResouceScheduler将之置为SCHEDULED状态，表示开始为该Application的ApplicationMaster分配资源。
+（4）ALLOCATED_SAVING
+ResouceScheduler将一个Container分配给该Application Attempt的ApplicationMaster（用于启动该ApplicationMaster），则该Application Attempt将被置为ALLOCATED_SAVING状态。
+（5）ALLOCATED
+ResourceManager将分配给ApplicationMaster的container信息保存到文件中，以便于失败后从磁盘上恢复，经持久化存储的Application Attempt状态为ALLOCATED。
+（6） LAUNCHED
+ResourceManager中的ApplicationMasterLauncher与对应的NodeManager通信，启动ApplicationMaster，此时Application Attempt将被置为LAUNCHED状态。
+（7） RUNNING
+RM创建的Application Attempt在对应的NodeManager上成功启动，并通过RPC函数AMRMProtocol.registeApplicationMaster()向ResourceManager注册，此时Application Attempt状态被置为RUNNING。
+（8） FAILED
+Application的ApplictionMaster运行失败，导致Application Attempt的状态被置为FAILED。
+（9）KILLED
+Application Attempt收到KILL事件，将被置为KILLED。
+（10）FINISHING
 Application Master通过RPC函数AMRMProtocol.finishApplicationMaster()通知RM，自己运行结束，此时Application处于FINISHING状态。
-（8）FINISHED
+（11）FINISHED
 NodeManager通过心跳汇报ApplicationMaster所在的Container运行结束，此时Application被置为FINISHED状态。
+（12）LAUNCHED_UNMANAGED_SAVING
+为了方便对ApplictionMaster进行测试和满足特殊情况下对权限的要求，ResourceManager允许用户直接将Application的ApplicationMaster启动在客户端中。
+（13） RECOVERED
+ApplicationAttempt从文件中恢复状态。
 基本事件
-（1） STARTED
-NodeManager启动后，会通过RPC函数ResourceTracker.registerNodeManager()向RM注册，此时会触发STARTED事件。
-（2） KILL
-客户端调用RPC函数ClientRMProtocol.forceKillApplication()杀死Application，此时会触发一个KILL事件。
-（3） APP_REJECTED
-客户端通过RPC函数ClientRMProtocol.submitApplication向RM提交一个Application时，抛出IOException异常，此时会触发一个APP_REJECTED事件。
-（4） APP_ACCEPTED
-客户端通过RPC函数ClientRMProtocol.submitApplication向RM成功提交一个Application，此时会触发一个APP_ACCEPTED事件。
-（5） ATTEMPT_REGISTERED
-ApplicationMaster通过RPC函数AMRMProtocol.registerApplicationMaster()向RM注册时，触发一个ATTEMPT_REGISTERED事件。
-（6） ATTEMPT_FINISHING
-ApplicationMaster通过RPC函数AMRMProtocol.finishApplicationMaster ()向RM汇报自己运行完成，此时会触发一个ATTEMPT_FINISHING事件。
-（7）ATTEMPT_FINISHED
-NodeManager通过心跳汇报ApplicationMaster所在的Container运行结束，此时Application被置为FINISHED状态。
-（8）NODE_UPDATE
-NodeManager每次汇报心跳信息会触发一个NODE_UPDATE事件。
-（9）ATTEMPT_FAILED
-ApplicationMaster运行失败时，会触发一个ATTEMPT_FAILED事件。
-（10）ATTEMPT_KILLED
-ApplicationMaster被杀死时，会触发一个ATTEMPT_KILLED事件。
-下图描述了各个事件的来源：
-
+RMAppAttempt中涉及到的15种事件类型来源如下图所示：
