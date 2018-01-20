@@ -45,7 +45,7 @@ ResourceTrackerService负责处理来自各个NodeManager的请求，主要包�
 NM启动时候，它会周期性的通过RPC函数ResourceTracker. nodeHeartbeat ()汇报心跳，具体包含各个Container运行状态、运行的Application列表、节点健康状况等信息，而RM则位置返回需要释放的Container列表，Application列表等。
 
 ## AM管理
-ApplictionMaster管理部分主要由三个服务构成，分别是AMLivelinessMonitor、ApplicationMasterLauncher和ApplicationMasterService，它们共同管理ApplicationMaster的生存周期，接下来我们依次介绍这三个服务。
+>ApplictionMaster管理部分主要由三个服务构成，分别是AMLivelinessMonitor、ApplicationMasterLauncher和ApplicationMasterService，它们共同管理ApplicationMaster的生存周期，接下来我们依次介绍这三个服务。
 
 AMLivelinessMonitor
 该服务周期性遍历所有ApplicationMaster，如果一个ApplicationMaster在一定时间（可通过参数yarn.am.liveness-monitor.expiry-interval-ms配置，默认为10min）内未汇报心跳信息，则认为它死掉了，它上面所有正在运行的Container将被置为运行失败（RM不会重新执行这些Container，它只会通过心跳机制告诉对应的AM，由AM决定是否重新执行，如果需要，则AM重新向RM申请资源），AM本身会被重新分配到另外一个节点上（管理员可通过参数yarn.resourcemanager.am.max-retries指定每个ApplicationMaster的尝试次数，默认是1次）执行。
@@ -183,27 +183,31 @@ hadoop-mapreduce-project\hadoop-yarn\hadoop-yarn-server\hadoop-yarn-server-resou
 
 
 ## RMContainer状态机分析
-RMContainer是ResourceManager中用于维护一个Container生命周期的数据结构，它的实现是RMContainerImpl，该类维护了一个Container状态机，记录了一个Container可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，RMContainerImpl会根据实际情况进行Container状态转移，同时触发一个行为。
+* RMContainer
+  * RMContainer是ResourceManager中用于维护一个Container生命周期的数据结构
+  * 实现是RMContainerImpl，该类维护了一个Container状态机
+  * 记录了一个Container可能存在的各个状态以及导致状态间转换的事件，当某个事件发生时，RMContainerImpl会根据实际情况进行Container状态转移，同时触发一个行为。
 
 如图所示，在RM看来，每个Container有9种基本状态（RMContainerState）和8种导致这9种状态之间发生转移的事件（RMContainerEventType），RMContainerImpl的作用是等待接收其他对象发出的RMContainerEventType类型的事件，然后根据当前状态和事件类型，将当前状态转移到另外一种状态，同时触发另外一种行为（实际上执行一个函数，该函数可能会再次发出一种其他类型的事件）。下面具体进行介绍：
-基本状态
-（1）NEW
+
+* 基本状态
+1. NEW
 状态机初始状态，每个Container对应一个状态机，而每个状态机的初始状态为NEW。
-（2）RESERVED
+2. RESERVED
 当一个节点上的资源不予以满足一个Application的container的要求时，YARN会让该节点为该container预留资源，直到剩余资源足以满足container需求。Container处于资源得到不到满足状态即为RESERVED。
-（3）ALLOCATED
+3. ALLOCATED
 当资源调度器将一个Container分配给一个Application时，该Container处于ALLOCATED状态。（注意，此时ApplicationMaster还未获取该Container。）
-（4） ACQUIRED
+4.  ACQUIRED
 ApplicationMaster通过RPC函数AMRMProtocol.allocate()拉取分配给自己的Container，此时，这些Container将被置为ACQUIRED。
-（5）RUNNING
+5. RUNNING
 ApplicationMaster通过RPC函数AMRMProtocol.allocate()拉取分配给自己的Container后，在对应的NodeManager上启动这些Container，接着NodeManager通过心跳机制将这些Container状态汇报给ResourceManager，此时，ResourceManager将这些Container状态置为RUNNING。
-（6）RELEASED
+6. RELEASED
 ApplicationMaster通过RPC函数AMRMProtocol.allocate()向ResourceManager发送信息，要求它释放一些Container（可能是由于资源过剩或者内部的抢占机制要求释放一些Container），ResourceManager收到请求后将这些Container置为RELEASED。
-（7）COMPLETED
+7.  COMPLETED
 NodeManager通过RPC函数ResourceTracker.nodeHeartbeat()告诉ResourceManager运行完成的Container，而ResourceManager则将这些Container置为COMPLETED。
-（8）EXPIRED
+8. EXPIRED
 ResourceManager将一个container分配给ApplicationMaster后，该ApplicationMaster在一定时间内没有启用该Container，则ResourceManager会回收该Container，即将Container状态置为EXPIRED。
-（9）KILLED
+9. KILLED
 ApplicationMaster启动失败、被杀死或者运行过程中崩溃，ResourceManager会将该Application所有正在运行的Container置为KILLED状态。
 基本事件
 （1）START
