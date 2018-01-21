@@ -3,9 +3,9 @@
 需求
 
 * 当我们对Hadoop MapReduce框架进行改进时，需要时刻谨记的一个重要原则是用户的需求。近几年来，从Hadoop用户那里总结出MapReduce框架当前最紧迫的需求有：
-  1. 可靠性（Reliability）– JobTracker不可靠
+  1. 可靠性（Reliability）– JobTracker不可靠 
   2.可用性（Availability）– JobTracker可用性有问题
-  3. 扩展性（Scalibility）-拥有10000个节点和200，000个核的集群
+  3. 扩展性（Scalibility）-拥有10000个节点和200，000个核的集群 
   4. 向后兼容性（Backward Compatibility）：确保用户的MapReduce作业可无需修改即可运行
   5. 演化（Evolution）：让用户能够控制软件栈的升级，尤其是与Hive，HBase等的兼容。
   6. 可预测的延迟：这是用户非常关心的。小作业应该尽可能快得被调度，而当前基于TaskTracker->JobTracker ping（heartbeat）的通信方式代价和延迟过大，比较好的方式是JobTracker->TaskTracker ping, 这样JobTracker可以主动扫描有作业运行的TaskTracker（调用RPC）（见MAPREDUCE-279）。
@@ -58,7 +58,7 @@
     * 选择系统中“服务最低”的队列（如何定义服务最低？可以是资源利用量最低的队列，即：已使用的资源与总共可用资源比值最小）
 从该队列中选择优先级最高的作业
 尽量满足该作业的资源请求
-调度器API
+调度器API     
 Yarn 调度器与AM之间仅有一个API：
 Response allocate (List<ResourceRequest> ask, List<Container> release)
 AM使用一个ResourceRequest列表请求特定资源，并同时可要求释放一些调度器已经分配的容器。
