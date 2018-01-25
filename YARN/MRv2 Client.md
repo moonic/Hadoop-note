@@ -6,12 +6,12 @@
   * ClientRMProtocol：Yarn中的client通过该协议向ResourceManager提交作业。
 
 2. Client设计方法
-为了使Hadoop MapReduce无缝迁移到Yarn中，需要在client端同时使用这两个协议，采用的方法是：
+  * 为了使Hadoop MapReduce无缝迁移到Yarn中，需要在client端同时使用这两个协议，采用的方法是：
 继承+组合的设计模式
-设计新类YARNRunner，实现ClientProtocol接口，并将ClientRMProtocol对象作为内部成员。当用户提交作业时，会直接调用YARNRunner中的submitJob函数，在该函数内部，会接调用ClientRMProtocol的submitApplication函数，将作业提交到ResourceManager中。此处的submitApplication函数实际上是一个RPC函数，由ResourceManager实现。
+  * 设计新类YARNRunner，实现ClientProtocol接口，并将ClientRMProtocol对象作为内部成员。当用户提交作业时，会直接调用YARNRunner中的submitJob函数，在该函数内部，会接调用ClientRMProtocol的submitApplication函数，将作业提交到ResourceManager中。此处的submitApplication函数实际上是一个RPC函数，由ResourceManager实现。
 
 ClientRMProtocol接口中的所有方法：
-
+```java
 public SubmitApplicationResponse submitApplication(
  
   SubmitApplicationRequest request) throws YarnRemoteException;
@@ -26,10 +26,12 @@ public GetApplicationReportResponse getApplicationReport(
  
   GetApplicationReportRequest request) throws YarnRemoteException;
 client通过该函数向ResourceManager查询某个application的信息，如id，user，time等信息。
+```
 
 3. 整个流程分析
-Client首先通过ClientRMProtocal#getNewApplication获取一个新的“ApplicationId”，然后使用ClientRMProtocal#submitApplication提交一个application，当调用ClientRMProtocal#submitApplication时 ，需要向Resource Manager提供足够的信息以便启动第一个container（实际上就是Application Master）。Client需要提供足够的细节信息，如运行application需要的文件和jar包，执行这些jar包需要的命令，一些unix环境设置等。
-这之后，Resource Manager会首先申请一个container，并在它里面启动ApplicationMaster，之后ApplicationMaster会通过AMRMProtocal和ContainerManager分别与Resource Manager和Node Manager通信进行资源申请和container启动。
+  * Client首先通过ClientRMProtocal#getNewApplication获取一个新的“ApplicationId”，然后使用ClientRMProtocal#submitApplication提交一个application，当调用ClientRMProtocal#submitApplication时 ，需要向Resource Manager提供足够的信息以便启动第一个container（实际上就是Application Master）。
+  * Client需要提供足够的细节信息，如运行application需要的文件和jar包，执行这些jar包需要的命令，一些unix环境设置等。
+ Resource Manager会首先申请一个container，并在它里面启动ApplicationMaster，之后ApplicationMaster会通过AMRMProtocal和ContainerManager分别与Resource Manager和Node Manager通信进行资源申请和container启动。
 
 具体细节：
 1. Client向Resource Manager发动一个连接，更具体 一些，实际上是向ResourceManager的ApplicationsManager发动一个连接。
@@ -68,6 +70,7 @@ Client最重要的任务是设置对象ApplicationSubmissionContext，它定义�
 [2] 用户：哪个用户提交的application，这主要用于权限管理。
 [3] ContainerLaunchContext：启动并运行ApplicationMaster的那个container的相关信息，包括：本地资源（binaries，jars，files等），安全令牌（security tokens），环境变量设置（CLASSPATH等）和运行命令。
 
+```java
 // Create a new ApplicationSubmissionContext
  
 ApplicationSubmissionContext appContext =
@@ -238,6 +241,7 @@ appRequest.setApplicationSubmissionContext ( appContext ) ;
 //success or an exception thrown to denote the failure
  
 applicationsManager. submitApplication ( appRequest ) ;
+```
 （4） 到此为止，ResourceManager应该已经接受该application，并根据资源需求分配一个container，最终在分配的container中启动ApplicationMaster。Client有多种方法跟踪实际任务的进度：可以使用ClientRMProtocal#getApplicationReport与ResourceManager通信以获取application执行当前情况报告。
 
 GetApplicationReportRequest request = recordFactory
