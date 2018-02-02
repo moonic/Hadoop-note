@@ -1,7 +1,7 @@
 # MRv2 MRAppMaster
 
 1. 什么是MRAppMaster？
-  * MRv1中，JobTracker存在诸多问题，包括存在单点故障，扩展受限等，为了解决这些问题，Apache对MRv1进行了改进，提出了YARN，YARN将JobTracker中的作业控制和资源管理两个功能分开，分别由两个不同的进程处理，进而解决了原有JobTracker存在的问题。经过架构调整之后
+  * MRv1中，JobTracker存在诸多问题，包括存在单点故障，扩展受限等，为了解决这些问题，Apache对MRv1进行了改进，提出了YARN，YARN将JobTracker中的作业控制和资源管理两个功能分开，分别由两个不同的进程处理，进而解决了原有JobTracker存在的问题。经过架构调整之后 
   * YARN已经完全不同于MRv1，它已经变成了一个资源管理平台，或者说应用程序管理框架。运行于YARN之上的计算框架不只限于MapReduce一种，也可以是其他流行计算框架，比如流式计算、迭代式计算等类型的计算框架。
   * 为了将一个计算框架运行于YARN之上，用户需要开发一个组件—ApplicationMaster。作为一个开始，YARN首先支持的计算框架是MapReduce，YARN为用户实现好了MapReduce的ApplicationMaster，也就是本文要介绍了MRAppMaster。
   
@@ -20,7 +20,7 @@
   * 它通过事件将各个组件联系起来，并由一个中央事件调度器统一将各种事件分配给对应的事件处理器。
   * 在YARN中，每种组件是一种事件处理器，当MRAppMaster启动时，它们会以服务的形式注册到MRAppMaster的中央事件调度器上，并告诉调度器它们处理的事件类型，这样，当出现某一种事件时，MRAppMaster会查询<事件，事件处理器>表，并将该事件分配给对应的事件处理器。
   * 接下来，我们分别介绍MRAppMaster各种组件/服务的功能。
-
+   
 * ContainerAllocator
   * 与ResourceManager通信，为作业申请资源。作业的每个任务资源需求可描述为四元组<Priority, hostname，capability，containers>，分别表示作业优先级、期望资源所在的host，资源量（当前仅支持内存），
   * container数目。ContainerAllocator周期性通过RPC与ResourceManager通信，而ResourceManager会为之返回已经分配的container列表，完成的container列表等信息。
