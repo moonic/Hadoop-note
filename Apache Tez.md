@@ -44,3 +44,20 @@ Tez计算框架的引入，至少可以解决现有MR框架在迭代计算（如
 （5）http://hortonworks.com/blog/100x-faster-hive/
 （6）http://hortonworks.com/blog/hortonworks-data-platform-2-0-alpha-2-now-available-focus-on-apache-hive-performance-enhancements/
 （7）http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.0.2/bk_installing_manually_book/content/rpm-chap-tez.html 
+1. 当前YARN框架存在的问题
+（1）作业启用一个独立的ApplicationMaster
+MRv1中所有作业公用一个作业追踪器JobTracker，当JobTracker出现故障是 ，整个系统将不可用，且所有作业将运行失败。与MRv1不同，YARN中每个作业启用一个独立的作业追踪器ApplicationMaster，解决了MRv1中单点故障和扩展瓶颈问题。但这种方式 将引入一个新的问题：作业延迟较大，即每个作业首先要申请资源启动一个ApplicationMaster后，才可以正式启动作业，也就是说，较MRv1中的作业运行过程，YARN作业将耗费更多的计算资源和产生更长的运行延迟，这不利于运行小作业和DAG作业，尤其是DAG作业（如Hive SQL和Pig产生的DAG作业），将需要更多的计算资源。
+（2）资源无法重用
+在MRv1中，用户可为自己的作业设置是否启用JVM重用功能，如果启用该功能，则同一个JVM可运行多个任务，从而降低作业延迟提高作业效率。在YARN MRAppMaster（MRAppMaster是MapReduce计算框架的ApplicationMaster）中，MRAppMaster总是为未运行的任务申请新的资源(Container)，也就是时候，任务运行完成后便会释放对应的资源，并为接下来运行的任务重新申请资源(Container)，而不会向MRv1那样重用资源(Container)。
+2. Apache Tez中的优化技术
+为了克服当前YARN存在的问题，Apache Tez（什么是Apache Tez，可参考我这篇文章：“Apache Tez：一个运行在YARN上支持DAG作业的计算框架”）提出了一系列优化技术，其中值得一说的是ApplicationMaster缓冲池、预先启动Container和Container重用这三项技术。
+（1）ApplicationMaster缓冲池
+在Apache Tez中 ，用户并不是直接将作业提交到ResouceManager上，而是提交到一个 叫AMPoolServer的服务上。该服务启动后，会预启动若干个ApplicationMaster，形成一个ApplicationMaster缓冲池，这样，当用户提交作业时，可通过AMPoolServer直接将作业提交到这些ApplicationMaster上。这样做的好处是，避免了每个作业启动一个独立的ApplicationMaster。
+在Apache Tez中，管理员可采用参数tez.ampool.am-pool-size和tez.ampool.max.am-pool-size配置ApplicationMaster缓冲区中最小ApplicationMaster个数和最大ApplicationMaster个数。
+
+（2）预先启动Container
+ApplicationMaster缓冲池中的每个ApplicationMaster启动时可以预先启动若干个Container，以提高作业运行效率。管理员可通过参数yarn.app.mapreduce.am.lazy.prealloc-container-count设置每个ApplicationMaster预启动container的数目。
+
+（3） Container重用
+每个任务运行完成后，ApplicationMaster不会立即释放其占用的container，而是将其分配给其他未运行的任务，从而达到资源(Container)重用的目的。管理员可通过参数yarn.app.mapreduce.am.scheduler.reuse.enable指定是否启用Container重用功能，通过参数yarn.app.mapreduce.am.scheduler.reuse.max-attempts-per-container设置每个container重用次数。
+ 
